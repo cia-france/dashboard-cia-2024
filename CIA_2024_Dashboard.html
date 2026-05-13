@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIA — Analyse Base Clients 2024</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0f18;color:#c8d6e0;font-family:'DM Sans',sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,#0f1923,#1a2d42,#0f1923);border-bottom:1px solid #1e3348;padding:28px 32px 20px}
+.header h1{font-size:28px;color:#e8edf2;display:inline;letter-spacing:-0.5px}
+.header .sub{font-size:14px;color:#4a7a9b;font-family:'Space Mono',monospace;margin-left:12px}
+.header p{font-size:15px;color:#6b8299;margin-top:4px}
+.tabs{display:flex;border-bottom:1px solid #1e3348;background:#0d1520;overflow-x:auto}
+.tab{padding:14px 24px;border:none;background:transparent;color:#4a6a80;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .2s}
+.tab.active{background:#162333;color:#e8edf2;font-weight:600;border-bottom-color:#2d6a9f}
+.tab:hover{color:#8899aa}
+.content{padding:24px 32px;max-width:1200px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.card{background:linear-gradient(135deg,#0f1923,#162333);border-radius:12px;padding:20px 24px;border:1px solid #1e334833;position:relative;overflow:hidden}
+.card .accent{position:absolute;top:0;left:0;width:4px;height:100%}
+.card .label{font-size:12px;color:#8899aa;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+.card .value{font-size:28px;font-weight:700;color:#e8edf2}
+.card .sub{font-size:12px;color:#6b8299;margin-top:4px}
+.panel{background:#0f1923;border-radius:12px;padding:20px 16px;border:1px solid #1e3348;margin-bottom:24px}
+.section-title{font-size:13px;color:#6b8299;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.insight{padding:10px 14px;background:#162333;border-radius:8px;font-size:13px;color:#8899aa;margin-bottom:8px}
+.insight b{color:#e8edf2}
+table{width:100%;font-size:12px;border-collapse:collapse}
+th{text-align:left;padding:8px 12px;color:#6b8299;border-bottom:1px solid #1e3348}
+th:not(:first-child){text-align:right}
+td{padding:8px 12px;border-bottom:1px solid #12202e}
+td:not(:first-child){text-align:right}
+td:first-child{color:#e8edf2;font-weight:500}
+.bar-row{margin-bottom:10px}
+.bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.bar-label span:first-child{color:#c8d6e0}
+.bar-label span:last-child{color:#6b8299}
+.bar-bg{background:#1e3348;border-radius:4px;height:8px}
+.bar-fill{border-radius:4px;height:8px;transition:width .5s}
+.seg-card{border-radius:12px;padding:24px;background:linear-gradient(135deg,#0f1923,#162333)}
+.seg-card h3{font-size:18px;font-weight:700;margin-bottom:16px}
+.seg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg-grid .l{font-size:11px;color:#6b8299}
+.seg-grid .v{font-size:20px;font-weight:700;color:#e8edf2}
+.seg-grid .vs{font-size:16px;font-weight:600;color:#c8d6e0}
+.hidden{display:none}
+canvas{max-height:320px}
+@media(max-width:768px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.content{padding:16px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>CIA</h1><span class="sub">Centre International d'Antibes</span>
+<p>Analyse base clients — Données 2024</p>
+</div>
+
+<div class="tabs" id="tabs">
+<button class="tab active" onclick="showTab(0)">Vue globale</button>
+<button class="tab" onclick="showTab(1)">Segments</button>
+<button class="tab" onclick="showTab(2)">Pays & marchés</button>
+<button class="tab" onclick="showTab(3)">Programmes</button>
+<button class="tab" onclick="showTab(4)">Profil client</button>
+</div>
+
+<!-- TAB 0 -->
+<div class="content tab-content" id="tab0">
+<div class="grid4" style="margin-bottom:32px">
+<div class="card"><div class="accent" style="background:#44937d"></div><div class="label">CA Total TTC</div><div class="value">12,8 M€</div><div class="sub">vs 11,2 M€ en 2023 → +14,6%</div></div>
+<div class="card"><div class="accent" style="background:#2d6a9f"></div><div class="label">Stagiaires</div><div class="value">9 960</div><div class="sub">vs 10 035 en 2023 → -0,7%</div></div>
+<div class="card"><div class="accent" style="background:#e8723a"></div><div class="label">Panier moyen</div><div class="value">1 289 €</div><div class="sub">vs 1 116 € en 2023 → +15,5%</div></div>
+<div class="card"><div class="accent" style="background:#7b5ea7"></div><div class="label">Durée moyenne</div><div class="value">1,6 sem</div><div class="sub">Adultes 2,5 · Juniors 1,8 · PGR 1,0</div></div>
+</div>
+<div class="section-title">Saisonnalité 2024 — CA mensuel</div>
+<div class="panel"><canvas id="chartSaison"></canvas></div>
+<div class="grid2">
+<div><div class="section-title">CA par Segment</div><div class="panel"><canvas id="chartSegPie"></canvas></div></div>
+<div><div class="section-title">Top 10 Pays par CA</div><div class="panel"><canvas id="chartPays0"></canvas></div></div>
+</div>
+</div>
+
+<!-- TAB 1 -->
+<div class="content tab-content hidden" id="tab1">
+<div class="grid3" style="margin-bottom:32px">
+<div class="seg-card" style="border:1px solid #1a3c5e44"><h3 style="color:#1a3c5e">Juniors</h3><div class="seg-grid"><div><div class="l">CA TTC</div><div class="v">5,9 M€</div></div><div><div class="l">Stagiaires</div><div class="v">2 854</div></div><div><div class="l">Panier moy.</div><div class="vs">2 065 €</div></div><div><div class="l">Durée moy.</div><div class="vs">1,8 sem</div></div></div></div>
+<div class="seg-card" style="border:1px solid #44937d44"><h3 style="color:#44937d">Groupes (PGR)</h3><div class="seg-grid"><div><div class="l">CA TTC</div><div class="v">4,9 M€</div></div><div><div class="l">Stagiaires</div><div class="v">5 600</div></div><div><div class="l">Panier moy.</div><div class="vs">877 €</div></div><div><div class="l">Durée moy.</div><div class="vs">1,0 sem</div></div></div></div>
+<div class="seg-card" style="border:1px solid #2d6a9f44"><h3 style="color:#2d6a9f">Adultes</h3><div class="seg-grid"><div><div class="l">CA TTC</div><div class="v">2,0 M€</div></div><div><div class="l">Stagiaires</div><div class="v">1 505</div></div><div><div class="l">Panier moy.</div><div class="vs">1 352 €</div></div><div><div class="l">Durée moy.</div><div class="vs">2,5 sem</div></div></div></div>
+</div>
+<div class="section-title">CA par Pays et Type de séjour</div>
+<div class="panel"><canvas id="chartCross"></canvas></div>
+<div class="panel">
+<div style="font-size:14px;font-weight:600;color:#e8edf2;margin-bottom:12px">Insights clés par segment</div>
+<div class="insight" style="border-left:3px solid #e8723a"><b>Juniors = 46% du CA</b> — 2 854 élèves à 2 065 € de panier moyen. Segment le plus rentable par tête. Dominé par l'Allemagne, l'Espagne et les USA.</div>
+<div class="insight" style="border-left:3px solid #44937d"><b>Groupes = volume</b> — 5 600 stagiaires mais panier faible (877 €). L'Italie pèse à elle seule 1,15 M€ sur ce segment.</div>
+<div class="insight" style="border-left:3px solid #1a3c5e"><b>Adultes = croissance</b> — 1 505 stagiaires, séjours plus longs (2,5 sem). Suisse et Allemagne en tête.</div>
+</div>
+</div>
+
+<!-- TAB 2 -->
+<div class="content tab-content hidden" id="tab2">
+<div class="grid2" style="margin-bottom:32px">
+<div><div class="section-title">Top 10 Pays par CA</div><div class="panel"><canvas id="chartPays2"></canvas></div></div>
+<div><div class="section-title">Top 10 Agences (TO) par CA</div><div class="panel"><canvas id="chartTO"></canvas></div></div>
+</div>
+<div class="panel">
+<div style="font-size:14px;font-weight:600;color:#e8edf2;margin-bottom:12px">Détail marchés</div>
+<table>
+<thead><tr><th>Pays</th><th>Stagiaires</th><th>CA TTC</th><th>Panier moy.</th><th>% du CA</th></tr></thead>
+<tbody id="paysTable"></tbody>
+</table>
+</div>
+</div>
+
+<!-- TAB 3 -->
+<div class="content tab-content hidden" id="tab3">
+<div class="grid2" style="margin-bottom:32px">
+<div><div class="section-title">Répartition par programme</div><div class="panel"><canvas id="chartProg"></canvas></div></div>
+<div style="display:grid;gap:10px;align-content:start" id="progCards"></div>
+</div>
+<div class="panel">
+<div style="font-size:14px;font-weight:600;color:#e8edf2;margin-bottom:12px">Top 10 Établissements scolaires émetteurs</div>
+<div class="grid2" id="ecoleList"></div>
+</div>
+</div>
+
+<!-- TAB 4 -->
+<div class="content tab-content hidden" id="tab4">
+<div class="grid2" style="margin-bottom:32px">
+<div><div class="section-title">Répartition par tranche d'âge</div><div class="panel"><canvas id="chartAge"></canvas></div></div>
+<div><div class="section-title">Genre</div><div class="panel"><canvas id="chartSexe"></canvas></div></div>
+</div>
+<div class="grid2">
+<div><div class="section-title">Niveau de français à l'arrivée</div><div class="panel" id="niveauBars"></div></div>
+<div><div class="section-title">Insights profil</div>
+<div class="insight" style="border-left:3px solid #2d6a9f"><b>71% de femmes</b><br><span style="font-size:12px">Dominance féminine très marquée, surtout chez les adultes</span></div>
+<div class="insight" style="border-left:3px solid #e8723a"><b>76% ont entre 12 et 17 ans</b><br><span style="font-size:12px">Le cœur de cible reste les mineurs — s'adresser aux parents</span></div>
+<div class="insight" style="border-left:3px solid #44937d"><b>Élémentaire A1-A2 = profil dominant</b><br><span style="font-size:12px">Débutants et faux-débutants. Adapter le discours : pas de jargon FLE</span></div>
+<div class="insight" style="border-left:3px solid #7b5ea7"><b>Vente directe = 30,5% du CA</b><br><span style="font-size:12px">3,9 M€ en direct, panier le plus élevé (1 706 €). Levier SEO/SEA critique</span></div>
+</div>
+</div>
+</div>
+
+<script>
+const COLORS=["#1a3c5e","#2d6a9f","#e8723a","#44937d","#c94a5c","#7b5ea7","#d4a43a","#3a8fb7","#c17849","#5c8a4d"];
+const fmt=v=>new Intl.NumberFormat('fr-FR').format(Math.round(v));
+const fmtK=v=>v>=1e6?(v/1e6).toFixed(1)+' M€':v>=1e3?Math.round(v/1e3)+' K€':v+' €';
+
+Chart.defaults.color='#6b8299';Chart.defaults.borderColor='#1e3348';Chart.defaults.font.family="'DM Sans',sans-serif";
+
+const paysD=[{n:"Italie",nb:1698,ca:1674629},{n:"Suisse",nb:704,ca:1277504},{n:"Allemagne",nb:842,ca:1238252},{n:"États-Unis",nb:548,ca:1041645},{n:"Espagne",nb:366,ca:787750},{n:"Royaume-Uni",nb:503,ca:651184},{n:"Irlande",nb:246,ca:609190},{n:"Turquie",nb:169,ca:425151},{n:"Suède",nb:157,ca:220782},{n:"Autriche",nb:136,ca:190213}];
+const toD=[{n:"Direct",ca:3914496},{n:"ESL Séjours",ca:459746},{n:"Tribe Study",ca:331655},{n:"Boa Lingua",ca:276788},{n:"WorldStrides",ca:223043},{n:"Thur Lingua",ca:209507},{n:"Linguista",ca:203858},{n:"StudyLingua",ca:197278},{n:"Juvigo",ca:137339},{n:"Apple Lang.",ca:119924}];
+
+let charts={};
+function showTab(i){
+document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden'));
+document.getElementById('tab'+i).classList.remove('hidden');
+document.querySelectorAll('.tab').forEach((el,j)=>el.classList.toggle('active',j===i));
+setTimeout(()=>{if(i===0)initTab0();if(i===1)initTab1();if(i===2)initTab2();if(i===3)initTab3();if(i===4)initTab4();},50);
+}
+
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+function makeChart(id,cfg){destroyChart(id);const ctx=document.getElementById(id);if(!ctx)return;charts[id]=new Chart(ctx,cfg);}
+
+function initTab0(){
+makeChart('chartSaison',{type:'bar',data:{labels:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],datasets:[{label:'CA TTC',data:[431086,710562,922673,922048,728652,2507923,2977065,1306968,1221324,573111,489780,45266],backgroundColor:['#2d6a9f','#2d6a9f','#2d6a9f','#2d6a9f','#2d6a9f','#c17849','#e8723a','#c17849','#2d6a9f','#2d6a9f','#2d6a9f','#2d6a9f'],borderRadius:4}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+' €'}}},scales:{y:{ticks:{callback:v=>fmtK(v)}}}}});
+makeChart('chartSegPie',{type:'doughnut',data:{labels:['Juniors','Groupes','Adultes'],datasets:[{data:[5893558,4908856,2034045],backgroundColor:['#e8723a','#44937d','#1a3c5e'],borderWidth:0}]},options:{plugins:{tooltip:{callbacks:{label:c=>fmt(c.raw)+' €'}},legend:{position:'bottom',labels:{padding:16}}}}});
+makeChart('chartPays0',{type:'bar',data:{labels:paysD.map(p=>p.n),datasets:[{label:'CA TTC',data:paysD.map(p=>p.ca),backgroundColor:COLORS,borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+' €'}}},scales:{x:{ticks:{callback:v=>fmtK(v)}}}}});
+}
+
+function initTab1(){
+const cross=[{p:"Italie",A:118905,J:398568,G:1157155},{p:"Suisse",A:508826,J:554306,G:214372},{p:"Allemagne",A:350908,J:800135,G:87209},{p:"États-Unis",A:242711,J:653564,G:145370},{p:"Espagne",A:59565,J:720294,G:7892},{p:"Royaume-Uni",A:135321,J:349663,G:166200},{p:"Irlande",A:19810,J:589379,G:0},{p:"Turquie",A:3300,J:350276,G:71575}];
+makeChart('chartCross',{type:'bar',data:{labels:cross.map(c=>c.p),datasets:[{label:'Adultes',data:cross.map(c=>c.A),backgroundColor:'#1a3c5e'},{label:'Juniors',data:cross.map(c=>c.J),backgroundColor:'#e8723a'},{label:'Groupes',data:cross.map(c=>c.G),backgroundColor:'#44937d'}]},options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmt(c.raw)+' €'}},legend:{position:'bottom',labels:{padding:16}}},scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>fmtK(v)}}}}});
+}
+
+function initTab2(){
+makeChart('chartPays2',{type:'bar',data:{labels:paysD.map(p=>p.n),datasets:[{label:'CA TTC',data:paysD.map(p=>p.ca),backgroundColor:COLORS,borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+' €'}}},scales:{x:{ticks:{callback:v=>fmtK(v)}}}}});
+makeChart('chartTO',{type:'bar',data:{labels:toD.map(t=>t.n),datasets:[{label:'CA TTC',data:toD.map(t=>t.ca),backgroundColor:'#e8723a',borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+' €'}}},scales:{x:{ticks:{callback:v=>fmtK(v)}}}}});
+const tb=document.getElementById('paysTable');tb.innerHTML='';
+paysD.forEach(p=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${p.n}</td><td>${fmt(p.nb)}</td><td>${fmtK(p.ca)}</td><td>${fmt(Math.round(p.ca/p.nb))} €</td><td>${(p.ca/12836459*100).toFixed(1)}%</td>`;tb.appendChild(tr);});
+}
+
+function initTab3(){
+const prog=[{n:"Château Juniors",nb:5862,pct:62.3},{n:"Château Adultes",nb:1588,pct:16.9},{n:"Campus Horticole",nb:1281,pct:13.6},{n:"Leonardo da Vinci",nb:508,pct:5.4},{n:"Le Port Adultes",nb:136,pct:1.4},{n:"Le Port Juniors",nb:20,pct:0.2}];
+makeChart('chartProg',{type:'doughnut',data:{labels:prog.map(p=>p.n),datasets:[{data:prog.map(p=>p.nb),backgroundColor:COLORS,borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:11}}},tooltip:{callbacks:{label:c=>fmt(c.raw)+' stagiaires'}}}}});
+const pc=document.getElementById('progCards');pc.innerHTML='';
+prog.forEach((p,i)=>{pc.innerHTML+=`<div style="background:#0f1923;border-radius:10px;padding:14px 18px;border:1px solid #1e3348;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:14px;font-weight:600;color:#e8edf2">${p.n}</div><div style="font-size:12px;color:#6b8299">${fmt(p.nb)} stagiaires</div></div><div style="font-size:20px;font-weight:700;color:${COLORS[i]}">${p.pct}%</div></div>`;});
+const ecoles=[["Godolphin & Latymer",116],["Scuola Intl. Spinelli",103],["Liceo Muratori",88],["Liceo Carducci",86],["Liceo Pascoli",79],["Liceo Dante Alighieri",78],["Liceo Buratti",78],["IIS Curie Vittorini",75],["Lycée Montale",71],["Liceo Nolfi Apolloni",67]];
+const el=document.getElementById('ecoleList');el.innerHTML='';
+ecoles.forEach(([n,nb],i)=>{el.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:6px 12px;background:${i%2===0?'#12202e':'transparent'};border-radius:6px"><span style="color:#c8d6e0">${n}</span><span style="color:#6b8299;font-family:'Space Mono',monospace">${nb}</span></div>`;});
+}
+
+function initTab4(){
+const age=[{n:"12-15",ca:5252291},{n:"16-17",ca:4530485},{n:"18-24",ca:1144669},{n:"< 12",ca:608972},{n:"40-59",ca:532875},{n:"25-39",ca:415099},{n:"60+",ca:352068}];
+makeChart('chartAge',{type:'bar',data:{labels:age.map(a=>a.n+' ans'),datasets:[{label:'CA TTC',data:age.map(a=>a.ca),backgroundColor:COLORS,borderRadius:4}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+' €'}}},scales:{y:{ticks:{callback:v=>fmtK(v)}}}}});
+makeChart('chartSexe',{type:'doughnut',data:{labels:['Femmes (71%)','Hommes (29%)'],datasets:[{data:[7073,2884],backgroundColor:['#2d6a9f','#e8723a'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom'}}}});
+const niv=[["Élémentaire A1-A2",2417],["Intermédiaire B1-B2",730],["Pré A1",437],["Débutant A0",368],["Avancé C1",21]];
+const nb=document.getElementById('niveauBars');nb.innerHTML='';
+niv.forEach(([n,v],i)=>{const pct=(v/9960*100);nb.innerHTML+=`<div class="bar-row"><div class="bar-label"><span>${n}</span><span>${fmt(v)} (${pct.toFixed(1)}%)</span></div><div class="bar-bg"><div class="bar-fill" style="background:${COLORS[i]};width:${pct*2.5}%;max-width:100%"></div></div></div>`;});
+nb.innerHTML+=`<div style="font-size:11px;color:#4a6a80;margin-top:8px">⚠ 60% des niveaux ne sont pas renseignés</div>`;
+}
+
+// Init
+showTab(0);
+</script>
+</body>
+</html>
