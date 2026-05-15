@@ -353,11 +353,115 @@ const CIA_DATA = {
   },
 
   // ===========================================================================
-  // EMPLACEMENT RÉSERVÉ — DONNÉES 2026
+  // DONNÉES 2026 — Extraites du fichier 2026 DATA.xlsx
+  // Données partielles (saison en cours) — bookings enregistrés à date
   // ===========================================================================
-  // Même structure que 2025. À remplir quand les données seront disponibles.
-  //
-  // "2026": { ... }
+  "2026": {
+    meta: {
+      annee: 2026,
+      label: "Données 2026 (en cours)",
+      couleur: "#a259c7"
+    },
+    kpi: {
+      caTotalTTC: 9539176,
+      stagiaires: 7363,
+      panierMoyen: 1296,
+      dureeMoyenne: 1.5,
+      venteDirect: { ca: 4837402, pct: 50.7, panier: 1296 }
+    },
+    mensuel: {
+      labels: ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"],
+      ca: [381933, 700173, 1213547, 1041479, 963899, 1892970, 2384704, 724976, 181171, 52285, 2040, 0]
+    },
+    segments: {
+      juniors: { ca: 5086106, stagiaires: 2261, panierMoyen: 2249, dureeMoyenne: 1.9 },
+      groupes: { ca: 2979812, stagiaires: 4029, panierMoyen: 740,  dureeMoyenne: 1.1 },
+      adultes: { ca: 1473259, stagiaires: 1073, panierMoyen: 1373, dureeMoyenne: 2.2 }
+    },
+    pays: [
+      { n: "SUISSE",       nb: 432, ca: 859094 },
+      { n: "ALLEMAGNE",    nb: 551, ca: 825764 },
+      { n: "IRLANDE",      nb: 341, ca: 758274 },
+      { n: "ETATS-UNIS",   nb: 348, ca: 685555 },
+      { n: "ESPAGNE",      nb: 254, ca: 647052 },
+      { n: "TURQUIE",      nb: 209, ca: 554954 },
+      { n: "ITALIE",       nb: 441, ca: 471447 },
+      { n: "ROYAUME-UNI",  nb: 282, ca: 453946 },
+      { n: "SUEDE",        nb: 127, ca: 203438 },
+      { n: "AUTRICHE",     nb: 124, ca: 186078 }
+    ],
+    agences: [
+      { n: "Direct",                              ca: 4837402 },
+      { n: "TRIBE STUDY ABROAD",                  ca: 437993  },
+      { n: "ESL SEJOURS LINGUISTIQUES",           ca: 284470  },
+      { n: "FORMULE DE LANGUE",                   ca: 169985  },
+      { n: "LINGUISTA SPRACHAUFENTHALTE ZURICH",  ca: 167946  },
+      { n: "BOA LINGUA",                          ca: 155635  },
+      { n: "STUDYLINGUA AG",                      ca: 136715  },
+      { n: "THUR LINGUA AG ST GALLEN",            ca: 128948  },
+      { n: "WORLDSTRIDES",                        ca: 109695  },
+      { n: "APPLE LANGUAGES COURSES LTD",         ca: 102588  }
+    ],
+    programmes: [
+      { n: "Non renseigné",                  nb: 1284, pct: 17 },
+      { n: "RESIDENCE CASTEL STANDARD ROOM", nb: 818,  pct: 11 },
+      { n: "RESIDENCE ASTOR",                nb: 720,  pct: 10 },
+      { n: "CAMPUS HORTICOLE",               nb: 552,  pct: 7  },
+      { n: "RESIDENCE ARAGON STUDIO",        nb: 504,  pct: 7  },
+      { n: "RESIDENCE CASTEL STUDIO",        nb: 382,  pct: 5  }
+    ],
+    crossSegPays: [
+      { p: "SUISSE",      A: 358559, J: 491078, G: 9456   },
+      { p: "ALLEMAGNE",   A: 296087, J: 521677, G: 8000   },
+      { p: "IRLANDE",     A: 39508,  J: 709017, G: 9750   },
+      { p: "ETATS-UNIS",  A: 180194, J: 473476, G: 31885  },
+      { p: "ESPAGNE",     A: 26711,  J: 620341, G: 0      },
+      { p: "TURQUIE",     A: 7469,   J: 540975, G: 6510   },
+      { p: "ITALIE",      A: 47228,  J: 270842, G: 153376 },
+      { p: "ROYAUME-UNI", A: 94783,  J: 345563, G: 13600  },
+      { p: "SUEDE",       A: 70831,  J: 132607, G: 0      },
+      { p: "AUTRICHE",    A: 16126,  J: 147047, G: 22904  }
+    ],
+    ecoles: [
+      ["LICEO L.A. MURATORI - SAN CARLO",                              88],
+      ["SCUOLA INTL A SPINELLI",                                        87],
+      ["IIS F. SELMI",                                                  85],
+      ["IIS CURIE VITTORINI",                                           79],
+      ["ISTITUTO DEL SACRO CUORE",                                      64],
+      ["LICEO STATALE AUGUSTO MONTI",                                   63],
+      ["LICEO CHARLES DARWIN",                                          62],
+      ["INSTITUTO TECNOLOGICO Y DE ESTUDIOS SUPERIORES DE MONTERREY",   60],
+      ["THE GODOLPHIN AND LATYMER SCHOOL",                              60],
+      ["LICEO STATALE CARDUCCI DI FERRARA",                             60]
+    ],
+    profil: {
+      genre: { femmes: 5168, hommes: 2195 },
+      tranches: [
+        { n: "16-17 ans", ca: 4036393 },
+        { n: "12-15 ans", ca: 3429519 },
+        { n: "18-24 ans", ca: 563035  },
+        { n: "40-59 ans", ca: 445024  },
+        { n: "< 12 ans",  ca: 438575  },
+        { n: "60+ ans",   ca: 413803  },
+        { n: "25-39 ans", ca: 167021  }
+      ],
+      niveaux: [
+        { n: "Élémentaire (A1,A2)",   nb: 1247 },
+        { n: "Intermédiaire (B1,B2)", nb: 479  },
+        { n: "Débutant (A0)",         nb: 126  },
+        { n: "Avancé (C1)",           nb: 15   },
+        { n: "Pré A1",                nb: 5    }
+      ]
+    },
+    insights: {
+      profil: [
+        { icon: "👩", txt: "<b>70% de femmes</b><br><span>Répartition stable (5 168 vs 2 195).</span>" },
+        { icon: "🎓", txt: "<b>78% du CA sur les 12-17 ans</b><br><span>Cœur de cible mineurs : 7,5 M€ sur cette tranche.</span>" },
+        { icon: "📘", txt: "<b>Élémentaire A1-A2 dominant</b><br><span>1 247 stagiaires identifiés à ce niveau (hors « Inconnu »).</span>" },
+        { icon: "💼", txt: "<b>Vente directe = 50,7% du CA</b><br><span>4,8 M€ en direct sur 9,5 M€ — saison partielle, les agences saisissent au fil de l'eau.</span>" }
+      ]
+    }
+  }
 
 };
 
