@@ -243,46 +243,114 @@ const CIA_DATA = {
   }
 
   // ===========================================================================
-  // EMPLACEMENT RÉSERVÉ — DONNÉES 2025
+  // DONNÉES 2025 — Extraites du fichier 2025_data.xlsx
   // ===========================================================================
-  // Décommenter et remplir avec les vraies données fournies par CIA.
-  // Respecter exactement la même structure que les années 2023 et 2024.
-  // NE PAS inventer de chiffres. Attendre les données réelles.
-  //
-  // "2025": {
-  //   meta: {
-  //     annee: 2025,
-  //     label: "Données 2025",
-  //     couleur: "#44937d"   // choisir une couleur différente des autres années
-  //   },
-  //   kpi: {
-  //     caTotalTTC:   0,     // ← Chiffre d'affaires total TTC annuel
-  //     stagiaires:   0,     // ← Nombre total de stagiaires/étudiants
-  //     panierMoyen:  0,     // ← CA total / nombre de stagiaires
-  //     dureeMoyenne: 0,     // ← Durée moyenne en semaines
-  //     venteDirect: { ca: 0, pct: 0, panier: 0 }
-  //   },
-  //   mensuel: {
-  //     labels: ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"],
-  //     ca:     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  // 12 valeurs CA mensuel TTC
-  //   },
-  //   segments: {
-  //     juniors: { ca: 0, stagiaires: 0, panierMoyen: 0, dureeMoyenne: 0 },
-  //     groupes: { ca: 0, stagiaires: 0, panierMoyen: 0, dureeMoyenne: 0 },
-  //     adultes: { ca: 0, stagiaires: 0, panierMoyen: 0, dureeMoyenne: 0 }
-  //   },
-  //   pays:         [ /* { n: "Pays", nb: 0, ca: 0 }, ... top 10 */ ],
-  //   agences:      [ /* { n: "Agence", ca: 0 }, ... top 10 */ ],
-  //   programmes:   [ /* { n: "Programme", nb: 0, pct: 0.0 }, ... */ ],
-  //   crossSegPays: [ /* { p: "Pays", A: 0, J: 0, G: 0 }, ... */ ],
-  //   ecoles:       [ /* ["Nom école", nb], ... top 10 */ ],
-  //   profil: {
-  //     genre:    { femmes: 0, hommes: 0 },
-  //     tranches: [ /* { n: "tranche", ca: 0 }, ... */ ],
-  //     niveaux:  [ /* { n: "niveau", nb: 0 }, ... */ ]
-  //   },
-  //   insights: { profil: [ /* { txt: "...", icon: "..." }, ... */ ] }
-  // },
+  "2025": {
+    meta: {
+      annee: 2025,
+      label: "Données 2025",
+      couleur: "#44937d"
+    },
+    kpi: {
+      caTotalTTC: 13222835,
+      stagiaires: 10298,
+      panierMoyen: 1284,
+      dureeMoyenne: 1.6,
+      venteDirect: { ca: 5026550, pct: 38, panier: 1823 }
+    },
+    mensuel: {
+      labels: ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"],
+      ca: [225614, 749289, 1063884, 1285191, 602935, 2806109, 3295415, 1830355, 695732, 381322, 250870, 36120]
+    },
+    segments: {
+      juniors: { ca: 6759346, stagiaires: 3254, panierMoyen: 2077, dureeMoyenne: 1.8 },
+      groupes: { ca: 4216027, stagiaires: 5324, panierMoyen: 792, dureeMoyenne: 1.2 },
+      adultes: { ca: 2247463, stagiaires: 1719, panierMoyen: 1307, dureeMoyenne: 2.3 }
+    },
+    pays: [
+      { n: "ITALIE", nb: 3448, ca: 2555278 },
+      { n: "SUISSE", nb: 870, ca: 1373152 },
+      { n: "ALLEMAGNE", nb: 969, ca: 1339238 },
+      { n: "ETATS-UNIS", nb: 662, ca: 1244388 },
+      { n: "IRLANDE", nb: 438, ca: 903606 },
+      { n: "ROYAUME-UNI", nb: 688, ca: 875582 },
+      { n: "TURQUIE", nb: 307, ca: 768447 },
+      { n: "ESPAGNE", nb: 370, ca: 762479 },
+      { n: "SUEDE", nb: 178, ca: 263793 },
+      { n: "AUTRICHE", nb: 187, ca: 258885 }
+    ],
+    agences: [
+      { n: "Direct", ca: 5026550 },
+      { n: "ESL SEJOURS LINGUISTIQUES", ca: 406942 },
+      { n: "TRIBE STUDY ABROAD", ca: 368921 },
+      { n: "THUR LINGUA AG ST GALLEN", ca: 255130 },
+      { n: "APPLE LANGUAGES COURSES LTD", ca: 213761 },
+      { n: "BOA LINGUA", ca: 204495 },
+      { n: "STUDYLINGUA AG", ca: 169314 },
+      { n: "WORLDSTRIDES", ca: 167405 },
+      { n: "FULIA LANGUAGE TRAINING ABROAD", ca: 166186 },
+      { n: "LINGUISTA SPRACHAUFENTHALTE ZURICH", ca: 154044 }
+    ],
+    programmes: [
+      { n: "Non renseigné", nb: 5440, pct: 53 },
+      { n: "RESIDENCE CASTEL STANDARD ROOM", nb: 891, pct: 9 },
+      { n: "CAMPUS HORTICOLE", nb: 824, pct: 8 },
+      { n: "RESIDENCE ARAGON STUDIO", nb: 580, pct: 6 },
+      { n: "RESIDENCE ASTOR", nb: 512, pct: 5 },
+      { n: "CANNES CARNOT", nb: 437, pct: 4 }
+    ],
+    crossSegPays: [
+      { p: "ITALIE", A: 136521, J: 354910, G: 2063847 },
+      { p: "SUISSE", A: 398970, J: 546701, G: 427482 },
+      { p: "ALLEMAGNE", A: 411754, J: 840566, G: 86917 },
+      { p: "ETATS-UNIS", A: 319611, J: 660718, G: 264060 },
+      { p: "IRLANDE", A: 41399, J: 827167, G: 35040 },
+      { p: "ROYAUME-UNI", A: 150227, J: 540014, G: 185341 },
+      { p: "TURQUIE", A: 10977, J: 627137, G: 130334 },
+      { p: "ESPAGNE", A: 45850, J: 677458, G: 39170 },
+      { p: "SUEDE", A: 143413, J: 120380, G: 0 },
+      { p: "AUTRICHE", A: 54479, J: 170955, G: 33450 }
+    ],
+    ecoles: [
+      ["ECOLE CENTRALE DE BUCAREST", 100],
+      ["MARIE CURIE TRADATE", 87],
+      ["CHARLES DARWIN RIVOLI", 83],
+      ["WINTERTHUR - CASTLE'S", 80],
+      ["CURIE VITTORINI", 75],
+      ["FALCON GIRLS", 69],
+      ["FREZZI", 69],
+      ["CARDUCCI FERRARA", 61],
+      ["KBZ ST GALLEN - THURLINGUA", 58],
+      ["MANZONI DE LATINA", 58]
+    ],
+    profil: {
+      genre: { femmes: 7096, hommes: 3201 },
+      tranches: [
+        { n: "12-15 ans", ca: 5202457 },
+        { n: "16-17 ans", ca: 4765082 },
+        { n: "18-24 ans", ca: 905422 },
+        { n: "< 12 ans", ca: 822072 },
+        { n: "40-59 ans", ca: 656501 },
+        { n: "25-39 ans", ca: 411896 },
+        { n: "60+ ans", ca: 459405 }
+      ],
+      niveaux: [
+        { n: "Élémentaire (A1,A2)", nb: 2171 },
+        { n: "Intermédiaire (B1,B2)", nb: 759 },
+        { n: "Débutant (A0)", nb: 333 },
+        { n: "Pré A1", nb: 204 },
+        { n: "Avancé (C1)", nb: 20 }
+      ]
+    },
+    insights: {
+      profil: [
+        { icon: "👩", txt: "<b>69% de femmes</b><br><span>Dominance féminine toujours marquée (7096 vs 3201).</span>" },
+        { icon: "🎓", txt: "<b>Fort CA sur les mineurs</b><br><span>Plus de 9,9 M€ sur les 12-17 ans.</span>" },
+        { icon: "📘", txt: "<b>Niveaux débutants majoritaires</b><br><span>A1/A2 sont les niveaux les plus représentés (2171).</span>" },
+        { icon: "💼", txt: "<b>Vente directe = 38% du CA</b><br><span>Forte progression de la vente directe avec 5 M€ (panier moyen: 1 823 €).</span>" }
+      ]
+    }
+  },
 
   // ===========================================================================
   // EMPLACEMENT RÉSERVÉ — DONNÉES 2026
