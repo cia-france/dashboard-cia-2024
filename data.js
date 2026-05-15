@@ -240,7 +240,7 @@ const CIA_DATA = {
         { icon: "💼", txt: "<b>Vente directe = 30,5% du CA</b><br><span>3,9 M€ en direct, panier le plus élevé (1 706 €). Levier SEO/SEA critique</span>" }
       ]
     }
-  }
+  },
 
   // ===========================================================================
   // DONNÉES 2025 — Extraites du fichier 2025_data.xlsx
