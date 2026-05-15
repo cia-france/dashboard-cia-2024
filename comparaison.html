@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIA — Comparaison Annuelle</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070c14;--bg2:#0b1220;--bg3:#0f1a2e;--bd:#1a2e48;--bd2:#243d5e;--tx:#c8d8e8;--tx2:#6b8299;--tx3:#8faab8;--ac:#2d6a9f;--gr:#2ecc71;--rd:#e74c3c}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;min-height:100vh}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:100}
+.s-logo{padding:24px 20px;border-bottom:1px solid var(--bd)}
+.s-badge{font-size:24px;font-weight:800;background:linear-gradient(135deg,#2d6a9f,#44937d);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.s-sub{font-size:9px;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin-top:2px;font-family:'Space Mono',monospace}
+.s-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px}
+.s-sec{font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;padding:10px 10px 4px}
+.s-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;color:var(--tx3);font-size:12px;font-weight:500;text-decoration:none;transition:.15s}
+.s-item:hover{background:var(--bg3);color:#e8edf2}
+.s-item.active{background:linear-gradient(90deg,#1a3c5e,transparent);color:#e8edf2;border-left:3px solid var(--ac);padding-left:7px}
+.s-foot{padding:12px 16px;border-top:1px solid var(--bd);font-size:10px;color:var(--tx2);font-family:'Space Mono',monospace}
+.dot{display:inline-block;width:7px;height:7px;background:var(--gr);border-radius:50%;margin-right:5px;box-shadow:0 0 6px var(--gr);animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+.main{margin-left:220px;min-height:100vh}
+.topbar{background:rgba(11,18,32,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-title{font-size:16px;font-weight:700;color:#e8edf2}
+.tb-meta{font-size:11px;color:var(--tx2);font-family:'Space Mono',monospace}
+.content{padding:28px}
+/* Filtres */
+.filters{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:18px 22px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.filter-grp{display:flex;align-items:center;gap:8px}
+.filter-lbl{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+select{background:var(--bg3);border:1px solid var(--bd);border-radius:7px;color:#e8edf2;padding:7px 12px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;outline:none}
+select:focus{border-color:var(--ac)}
+.divider{width:1px;height:30px;background:var(--bd)}
+.vs-badge{font-size:13px;font-weight:700;color:var(--tx2);font-family:'Space Mono',monospace}
+/* KPI comparatifs */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px}
+.kpi{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:20px;position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{transform:translateY(-2px);border-color:var(--bd2)}
+.kpi.kpi-green{border-color:#2ecc7144;background:linear-gradient(135deg,#0b1a10,#0b1220)}
+.kpi.kpi-red{border-color:#e74c3c44;background:linear-gradient(135deg,#1a0a0a,#0b1220)}
+.kpi.kpi-neutral{border-color:var(--bd)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kc,var(--ac))}
+.kpi-lbl{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+.kpi-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}
+.kpi-a{font-size:22px;font-weight:800;color:#e8edf2}
+.kpi-b{font-size:14px;color:var(--tx3);font-weight:600}
+.kpi-sep{font-size:10px;color:var(--tx2);margin:0 4px}
+.evo-row{display:flex;align-items:center;gap:8px}
+.badge{padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700}
+.g .badge,.badge.g{background:rgba(46,204,113,.15);color:var(--gr)}
+.r .badge,.badge.r{background:rgba(231,76,60,.15);color:var(--rd)}
+.n .badge,.badge.n{background:rgba(45,106,159,.15);color:var(--ac)}
+.evo-detail{font-size:11px;color:var(--tx2)}
+/* Panels */
+.panel{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:20px}
+.p-title{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;font-weight:600}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+canvas{max-height:300px}
+/* Tableau mensuel */
+table{width:100%;font-size:12px;border-collapse:collapse}
+th{text-align:left;padding:8px 10px;color:var(--tx2);border-bottom:1px solid var(--bd);font-weight:600;font-size:11px}
+th:not(:first-child){text-align:right}
+td{padding:7px 10px;border-bottom:1px solid rgba(26,46,72,.4);font-size:12px}
+td:not(:first-child){text-align:right}
+td.positive{color:var(--gr);font-weight:600}
+td.negative{color:var(--rd);font-weight:600}
+td.neutral-c{color:var(--ac)}
+/* Tableau segments */
+.seg-evo{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.seg-evo table td:first-child{color:#e8edf2;font-weight:600}
+/* Section */
+.sec-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.sec-line{flex:1;height:1px;background:var(--bd)}
+.sec-label{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;font-weight:600}
+@media(max-width:800px){.sidebar{display:none}.main{margin-left:0}.g2{grid-template-columns:1fr}.content{padding:16px}.filters{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="s-logo"><div class="s-badge">CIA</div><div class="s-sub">Centre International d'Antibes</div></div>
+  <nav class="s-nav">
+    <div class="s-sec">Navigation</div>
+    <a class="s-item" href="index.html"><span>🏠</span> Accueil</a>
+    <a class="s-item" href="dashboard.html"><span>📊</span> Dashboard annuel</a>
+    <a class="s-item active" href="comparaison.html"><span>⚖️</span> Comparaison</a>
+    <div class="s-sec">Années</div>
+    <a class="s-item" href="dashboard.html?annee=2024"><span>📅</span> 2024</a>
+    <a class="s-item" href="dashboard.html?annee=2023"><span>📅</span> 2023</a>
+  </nav>
+  <div class="s-foot"><span class="dot"></span>Accès réservé<br>v2.0 — Mai 2026</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title">Comparaison annuelle</div>
+      <div class="tb-meta">Évolution des indicateurs clés entre deux années</div>
+    </div>
+    <div style="font-size:11px;color:var(--tx2);font-family:'Space Mono',monospace">Règle ±5% activée</div>
+  </div>
+
+  <div class="content">
+
+    <!-- FILTRES -->
+    <div class="filters">
+      <div class="filter-grp">
+        <div class="filter-lbl">Année principale</div>
+        <select id="selA" onchange="refresh()"></select>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="filter-grp">
+        <div class="filter-lbl">Année de comparaison</div>
+        <select id="selB" onchange="refresh()"></select>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--tx2)">
+        <span style="color:var(--gr)">■</span> ≥ +5% &nbsp;
+        <span style="color:var(--ac)">■</span> entre ±5% &nbsp;
+        <span style="color:var(--rd)">■</span> ≤ −5%
+      </div>
+    </div>
+
+    <!-- KPI COMPARATIFS -->
+    <div class="sec-header"><div class="sec-label">KPI comparatifs</div><div class="sec-line"></div></div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- GRAPHIQUE CA MENSUEL -->
+    <div class="sec-header"><div class="sec-label">Évolution mensuelle du CA</div><div class="sec-line"></div></div>
+    <div class="panel"><canvas id="chMensuel"></canvas></div>
+
+    <!-- TABLEAU MENSUEL -->
+    <div class="sec-header"><div class="sec-label">Détail mensuel</div><div class="sec-line"></div></div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Mois</th><th id="thA">Année A</th><th id="thB">Année B</th><th>Différence</th><th>Évolution</th></tr></thead>
+        <tbody id="monthTb"></tbody>
+      </table>
+    </div>
+
+    <!-- SEGMENTS -->
+    <div class="sec-header"><div class="sec-label">Comparaison par segment</div><div class="sec-line"></div></div>
+    <div class="panel"><canvas id="chSeg"></canvas></div>
+    <div class="seg-evo">
+      <table>
+        <thead><tr><th>Segment</th><th>CA <span id="segA"></span></th><th>CA <span id="segB"></span></th><th>Évolution CA</th><th>Panier <span id="segA2"></span></th><th>Panier <span id="segB2"></span></th><th>Évol. panier</th></tr></thead>
+        <tbody id="segTb"></tbody>
+      </table>
+    </div>
+
+    <!-- PAYS -->
+    <div class="sec-header"><div class="sec-label">Comparaison pays</div><div class="sec-line"></div></div>
+    <div class="panel"><canvas id="chPays"></canvas></div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Pays</th><th id="thPA">CA A</th><th id="thPB">CA B</th><th>Évolution</th><th>Stag. <span id="stgA"></span></th><th>Stag. <span id="stgB"></span></th></tr></thead>
+        <tbody id="paysTb"></tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+<script>
+Chart.defaults.color='#6b8299';Chart.defaults.borderColor='#1a2e48';Chart.defaults.font.family="'Inter',sans-serif";
+let charts={};
+const dC=id=>{if(charts[id]){charts[id].destroy();delete charts[id];}};
+const mC=(id,cfg)=>{dC(id);const c=document.getElementById(id);if(!c)return;charts[id]=new Chart(c,cfg);};
+const MOIS=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+
+// populate selects
+const years=anneesDisponibles();
+const selA=document.getElementById('selA');
+const selB=document.getElementById('selB');
+years.forEach(y=>{selA.innerHTML+=`<option value="${y}">${y}</option>`;selB.innerHTML+=`<option value="${y}">${y}</option>`;});
+selA.value=years[0];
+selB.value=years[1]||years[0];
+
+function evoClass(pct){const c=getEvolutionColor(pct);return c==='green'?'g':c==='red'?'r':'n';}
+function evoTdClass(pct){const c=getEvolutionColor(pct);return c==='green'?'positive':c==='red'?'negative':'neutral-c';}
+function arrow(pct){return pct>0?'↑':pct<0?'↓':'→';}
+
+function refresh(){
+  const yA=selA.value, yB=selB.value;
+  const dA=CIA_DATA[yA], dB=CIA_DATA[yB];
+  if(!dA||!dB) return;
+
+  // ── KPI
+  const kpis=[
+    {lbl:'CA Total TTC',kc:'#44937d',vA:dA.kpi.caTotalTTC,vB:dB.kpi.caTotalTTC,fmt:fmtK,diff:v=>fmtK(Math.abs(v))},
+    {lbl:'Stagiaires',kc:'#2d6a9f',vA:dA.kpi.stagiaires,vB:dB.kpi.stagiaires,fmt:v=>fmt(v),diff:v=>fmt(Math.abs(v))},
+    {lbl:'Panier moyen',kc:'#e8723a',vA:dA.kpi.panierMoyen,vB:dB.kpi.panierMoyen,fmt:v=>fmt(v)+' €',diff:v=>fmt(Math.abs(v))+' €'},
+    {lbl:'Durée moyenne',kc:'#7b5ea7',vA:dA.kpi.dureeMoyenne,vB:dB.kpi.dureeMoyenne,fmt:v=>v.toFixed(1)+' sem',diff:v=>Math.abs(v).toFixed(2)+' sem'},
+    {lbl:'CA Juniors',kc:'#e8723a',vA:dA.segments.juniors.ca,vB:dB.segments.juniors.ca,fmt:fmtK,diff:v=>fmtK(Math.abs(v))},
+    {lbl:'CA Groupes',kc:'#44937d',vA:dA.segments.groupes.ca,vB:dB.segments.groupes.ca,fmt:fmtK,diff:v=>fmtK(Math.abs(v))},
+    {lbl:'CA Adultes',kc:'#1a3c5e',vA:dA.segments.adultes.ca,vB:dB.segments.adultes.ca,fmt:fmtK,diff:v=>fmtK(Math.abs(v))},
+    {lbl:'Vente directe',kc:'#d4a43a',vA:dA.kpi.venteDirect.ca,vB:dB.kpi.venteDirect.ca,fmt:fmtK,diff:v=>fmtK(Math.abs(v))}
+  ];
+  document.getElementById('kpiGrid').innerHTML=kpis.map(k=>{
+    const pct=calcEvo(k.vA,k.vB);
+    const cl=evoClass(pct);
+    const diff=k.vA-k.vB;
+    const kpiCl=getEvolutionColor(pct)==='green'?'kpi-green':getEvolutionColor(pct)==='red'?'kpi-red':'kpi-neutral';
+    return `<div class="kpi ${kpiCl}" style="--kc:${k.kc}">
+      <div class="kpi-lbl">${k.lbl}</div>
+      <div class="kpi-row">
+        <div class="kpi-a">${k.fmt(k.vA)}</div>
+        <div style="text-align:right"><div class="kpi-b">${k.fmt(k.vB)}</div><div style="font-size:10px;color:var(--tx2)">${yB}</div></div>
+      </div>
+      <div class="evo-row ${cl}">
+        <span class="badge">${arrow(pct)} ${fmtPct(pct)}</span>
+        <span class="evo-detail">${diff>=0?'+':''}${k.diff(diff)} vs ${yB}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── CA mensuel
+  mC('chMensuel',{type:'bar',data:{
+    labels:MOIS,
+    datasets:[
+      {label:`CA ${yA}`,data:dA.mensuel.ca,backgroundColor:'rgba(232,114,58,.8)',borderRadius:3},
+      {label:`CA ${yB}`,data:dB.mensuel.ca,backgroundColor:'rgba(45,106,159,.6)',borderRadius:3}
+    ]
+  },options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtK(c.raw)}}},scales:{y:{ticks:{callback:v=>fmtK(v)}}}}});
+
+  // ── Tableau mensuel
+  document.getElementById('thA').textContent=yA;
+  document.getElementById('thB').textContent=yB;
+  const tb=document.getElementById('monthTb');tb.innerHTML='';
+  MOIS.forEach((m,i)=>{
+    const vA=dA.mensuel.ca[i]||0, vB=dB.mensuel.ca[i]||0;
+    const pct=calcEvo(vA,vB);
+    const cl=evoTdClass(pct);
+    const diff=vA-vB;
+    tb.innerHTML+=`<tr><td>${m}</td><td>${fmtK(vA)}</td><td>${fmtK(vB)}</td><td class="${cl}">${diff>=0?'+':''}${fmtK(diff)}</td><td class="${cl}">${arrow(pct)} ${fmtPct(pct)}</td></tr>`;
+  });
+
+  // ── Segments chart
+  const segs=['juniors','groupes','adultes'];
+  const segN=['Juniors','Groupes','Adultes'];
+  mC('chSeg',{type:'bar',data:{
+    labels:segN,
+    datasets:[
+      {label:`CA ${yA}`,data:segs.map(s=>dA.segments[s].ca),backgroundColor:['rgba(232,114,58,.85)','rgba(68,147,125,.85)','rgba(26,60,94,.85)']},
+      {label:`CA ${yB}`,data:segs.map(s=>dB.segments[s].ca),backgroundColor:['rgba(232,114,58,.35)','rgba(68,147,125,.35)','rgba(26,60,94,.35)']}
+    ]
+  },options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtK(c.raw)}},legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>fmtK(v)}}}}});
+
+  // ── Tableau segments
+  document.querySelectorAll('#segA,#segA2').forEach(e=>e.textContent=yA);
+  document.querySelectorAll('#segB,#segB2').forEach(e=>e.textContent=yB);
+  const stb=document.getElementById('segTb');stb.innerHTML='';
+  segs.forEach((s,i)=>{
+    const sA=dA.segments[s],sB=dB.segments[s];
+    const pctCA=calcEvo(sA.ca,sB.ca);
+    const pctP=calcEvo(sA.panierMoyen,sB.panierMoyen);
+    const clCA=evoTdClass(pctCA);
+    const clP=evoTdClass(pctP);
+    stb.innerHTML+=`<tr><td>${segN[i]}</td><td>${fmtK(sA.ca)}</td><td>${fmtK(sB.ca)}</td><td class="${clCA}">${arrow(pctCA)} ${fmtPct(pctCA)}</td><td>${fmt(sA.panierMoyen)} €</td><td>${fmt(sB.panierMoyen)} €</td><td class="${clP}">${arrow(pctP)} ${fmtPct(pctP)}</td></tr>`;
+  });
+
+  // ── Pays comparaison
+  const allPays=[...new Set([...dA.pays.map(p=>p.n),...dB.pays.map(p=>p.n)])].slice(0,10);
+  const getP=(d,n)=>d.pays.find(p=>p.n===n)||{ca:0,nb:0};
+  mC('chPays',{type:'bar',data:{
+    labels:allPays,
+    datasets:[
+      {label:`${yA}`,data:allPays.map(n=>getP(dA,n).ca),backgroundColor:'rgba(232,114,58,.8)',borderRadius:3},
+      {label:`${yB}`,data:allPays.map(n=>getP(dB,n).ca),backgroundColor:'rgba(45,106,159,.6)',borderRadius:3}
+    ]
+  },options:{indexAxis:'y',plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtK(c.raw)}},legend:{position:'bottom'}},scales:{x:{ticks:{callback:v=>fmtK(v)}}}}});
+
+  document.getElementById('thPA').textContent='CA '+yA;
+  document.getElementById('thPB').textContent='CA '+yB;
+  document.getElementById('stgA').textContent=yA;
+  document.getElementById('stgB').textContent=yB;
+  const ptb=document.getElementById('paysTb');ptb.innerHTML='';
+  allPays.forEach(n=>{
+    const pA=getP(dA,n),pB=getP(dB,n);
+    const pct=calcEvo(pA.ca,pB.ca);
+    const cl=evoTdClass(pct);
+    ptb.innerHTML+=`<tr><td>${n}</td><td>${fmtK(pA.ca)}</td><td>${fmtK(pB.ca)}</td><td class="${cl}">${arrow(pct)} ${fmtPct(pct)}</td><td>${fmt(pA.nb)}</td><td>${fmt(pB.nb)}</td></tr>`;
+  });
+}
+
+refresh();
+</script>
+</body>
+</html>

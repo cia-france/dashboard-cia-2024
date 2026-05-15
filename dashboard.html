@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIA — Dashboard Annuel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070c14;--bg2:#0b1220;--bg3:#0f1a2e;--bd:#1a2e48;--bd2:#243d5e;--tx:#c8d8e8;--tx2:#6b8299;--tx3:#8faab8;--ac:#2d6a9f;--gr:#2ecc71;--rd:#e74c3c}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;min-height:100vh}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:100}
+.s-logo{padding:24px 20px;border-bottom:1px solid var(--bd)}
+.s-badge{font-size:24px;font-weight:800;background:linear-gradient(135deg,#2d6a9f,#44937d);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.s-sub{font-size:9px;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin-top:2px;font-family:'Space Mono',monospace}
+.s-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.s-sec{font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;padding:10px 10px 4px}
+.s-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;color:var(--tx3);font-size:12px;font-weight:500;text-decoration:none;transition:.15s}
+.s-item:hover{background:var(--bg3);color:#e8edf2}
+.s-item.active{background:linear-gradient(90deg,#1a3c5e,transparent);color:#e8edf2;border-left:3px solid var(--ac);padding-left:7px}
+.s-foot{padding:12px 16px;border-top:1px solid var(--bd);font-size:10px;color:var(--tx2);font-family:'Space Mono',monospace}
+.dot{display:inline-block;width:7px;height:7px;background:var(--gr);border-radius:50%;margin-right:5px;box-shadow:0 0 6px var(--gr);animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+.main{margin-left:220px;min-height:100vh}
+.topbar{background:rgba(11,18,32,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-title{font-size:16px;font-weight:700;color:#e8edf2}
+.tb-meta{font-size:11px;color:var(--tx2);font-family:'Space Mono',monospace}
+.year-sel{display:flex;gap:8px;align-items:center}
+.y-btn{padding:6px 14px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--tx3);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s;text-decoration:none;display:inline-block}
+.y-btn:hover,.y-btn.active{background:var(--ac);color:#fff;border-color:var(--ac)}
+.content{padding:28px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px}
+.kpi{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{transform:translateY(-2px);border-color:var(--bd2)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kc,var(--ac))}
+.kpi-lbl{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+.kpi-val{font-size:26px;font-weight:800;color:#e8edf2;margin-bottom:4px}
+.kpi-evo{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.badge{padding:2px 7px;border-radius:14px;font-size:10px;font-weight:700}
+.g .badge{background:rgba(46,204,113,.15);color:var(--gr)}
+.r .badge{background:rgba(231,76,60,.15);color:var(--rd)}
+.n .badge{background:rgba(45,106,159,.15);color:var(--ac)}
+.kpi-sub{font-size:10px;color:var(--tx2)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:24px;overflow-x:auto}
+.tab{padding:10px 20px;border:none;background:transparent;color:var(--tx2);font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;font-family:'Inter',sans-serif;white-space:nowrap;transition:.15s}
+.tab.active{color:#e8edf2;font-weight:700;border-bottom-color:var(--ac);background:rgba(45,106,159,.08)}
+.tab:hover{color:var(--tx3)}
+.tc{display:none}.tc.show{display:block}
+.panel{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:20px}
+.p-title{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;font-weight:600}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+canvas{max-height:280px}
+table{width:100%;font-size:12px;border-collapse:collapse}
+th{text-align:left;padding:8px 10px;color:var(--tx2);border-bottom:1px solid var(--bd);font-weight:600}
+th:not(:first-child){text-align:right}
+td{padding:7px 10px;border-bottom:1px solid rgba(26,46,72,.5);font-size:12px}
+td:not(:first-child){text-align:right;color:var(--tx3)}
+td:first-child{color:#e8edf2;font-weight:500}
+tr:hover td{background:rgba(45,106,159,.05)}
+.seg-card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:22px}
+.seg-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.seg-g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg-l{font-size:10px;color:var(--tx2)}
+.seg-v{font-size:18px;font-weight:700;color:#e8edf2}
+.bar-row{margin-bottom:8px}
+.bar-lab{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;color:var(--tx3)}
+.bar-bg{background:#1a2e48;border-radius:3px;height:6px}
+.bar-f{border-radius:3px;height:6px;transition:width .5s}
+.insight{padding:9px 12px;background:var(--bg3);border-radius:7px;font-size:12px;color:var(--tx3);margin-bottom:7px;border-left:3px solid var(--ac)}
+.insight b{color:#e8edf2}
+.prog-card{background:var(--bg3);border-radius:9px;padding:12px 16px;border:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+@media(max-width:800px){.sidebar{display:none}.main{margin-left:0}.g2,.g3{grid-template-columns:1fr}.content{padding:16px}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="s-logo"><div class="s-badge">CIA</div><div class="s-sub">Centre International d'Antibes</div></div>
+  <nav class="s-nav">
+    <div class="s-sec">Navigation</div>
+    <a class="s-item" href="index.html"><span>🏠</span> Accueil</a>
+    <a class="s-item active" href="#"><span>📊</span> Dashboard annuel</a>
+    <a class="s-item" href="comparaison.html"><span>⚖️</span> Comparaison</a>
+    <div class="s-sec">Années</div>
+    <a class="s-item" href="dashboard.html?annee=2024" id="nav2024"><span>📅</span> 2024</a>
+    <a class="s-item" href="dashboard.html?annee=2023" id="nav2023"><span>📅</span> 2023</a>
+    <div class="s-sec">Vues</div>
+    <a class="s-item" href="#" onclick="switchTab(2);return false"><span>🌍</span> Analyse pays</a>
+    <a class="s-item" href="#" onclick="switchTab(3);return false"><span>🎓</span> Programmes</a>
+    <a class="s-item" href="#" onclick="switchTab(1);return false"><span>🏷️</span> Segments</a>
+  </nav>
+  <div class="s-foot"><span class="dot"></span>Accès réservé<br>v2.0 — Mai 2026</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title" id="tbTitle">Dashboard CIA</div>
+      <div class="tb-meta">Analyse commerciale interne</div>
+    </div>
+    <div class="year-sel" id="yearSel"></div>
+  </div>
+
+  <div class="content">
+    <!-- KPI -->
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- TABS -->
+    <div class="tabs" id="tabBar"></div>
+
+    <!-- TAB 0 : Vue globale -->
+    <div class="tc show" id="tc0">
+      <div class="g2">
+        <div><div class="p-title">CA mensuel</div><div class="panel"><canvas id="chSaison"></canvas></div></div>
+        <div><div class="p-title">CA par segment</div><div class="panel"><canvas id="chSeg"></canvas></div></div>
+      </div>
+      <div><div class="p-title">Top 10 pays par CA</div><div class="panel"><canvas id="chPays0"></canvas></div></div>
+    </div>
+
+    <!-- TAB 1 : Segments -->
+    <div class="tc" id="tc1">
+      <div class="g3" id="segCards" style="margin-bottom:20px"></div>
+      <div class="p-title">CA par pays et segment</div>
+      <div class="panel"><canvas id="chCross"></canvas></div>
+    </div>
+
+    <!-- TAB 2 : Pays -->
+    <div class="tc" id="tc2">
+      <div class="g2" style="margin-bottom:20px">
+        <div><div class="p-title">Top 10 pays par CA</div><div class="panel"><canvas id="chPays2"></canvas></div></div>
+        <div><div class="p-title">Top agences / TO</div><div class="panel"><canvas id="chTO"></canvas></div></div>
+      </div>
+      <div class="p-title">Détail marchés</div>
+      <div class="panel"><table><thead><tr><th>Pays</th><th>Stagiaires</th><th>CA TTC</th><th>Panier moy.</th><th>% du CA</th></tr></thead><tbody id="paysTb"></tbody></table></div>
+    </div>
+
+    <!-- TAB 3 : Programmes -->
+    <div class="tc" id="tc3">
+      <div class="g2">
+        <div><div class="p-title">Répartition programmes</div><div class="panel"><canvas id="chProg"></canvas></div></div>
+        <div id="progCards"></div>
+      </div>
+      <div class="p-title" style="margin-top:20px">Top 10 établissements</div>
+      <div class="panel"><div class="g2" id="ecoleList"></div></div>
+    </div>
+
+    <!-- TAB 4 : Profil -->
+    <div class="tc" id="tc4">
+      <div class="g2" style="margin-bottom:20px">
+        <div><div class="p-title">Répartition par âge</div><div class="panel"><canvas id="chAge"></canvas></div></div>
+        <div><div class="p-title">Genre</div><div class="panel"><canvas id="chSexe"></canvas></div></div>
+      </div>
+      <div class="g2">
+        <div><div class="p-title">Niveau de français</div><div class="panel" id="niveauBars"></div></div>
+        <div><div class="p-title">Insights profil</div><div id="insightList"></div></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const C=['#1a3c5e','#2d6a9f','#e8723a','#44937d','#c94a5c','#7b5ea7','#d4a43a','#3a8fb7','#c17849','#5c8a4d'];
+const SEG_C={juniors:'#e8723a',groupes:'#44937d',adultes:'#2d6a9f'};
+Chart.defaults.color='#6b8299';Chart.defaults.borderColor='#1a2e48';Chart.defaults.font.family="'Inter',sans-serif";
+let charts={};
+const dC=id=>{if(charts[id]){charts[id].destroy();delete charts[id];}};
+const mC=(id,cfg)=>{dC(id);const c=document.getElementById(id);if(!c)return;charts[id]=new Chart(c,cfg);};
+
+const params=new URLSearchParams(location.search);
+let curYear=params.get('annee')||anneesDisponibles()[0];
+if(!CIA_DATA[curYear]) curYear=anneesDisponibles()[0];
+
+function D(){return CIA_DATA[curYear];}
+
+// Year selector
+function buildYearSel(){
+  const div=document.getElementById('yearSel');
+  div.innerHTML=anneesDisponibles().map(y=>
+    `<a class="y-btn${y===curYear?' active':''}" href="dashboard.html?annee=${y}">${y}</a>`
+  ).join('');
+}
+
+// KPI
+function buildKPI(){
+  const d=D();
+  const prevY=String(+curYear-1);
+  const prev=CIA_DATA[prevY];
+  document.getElementById('tbTitle').textContent='Dashboard CIA '+curYear;
+  const kpis=[
+    {lbl:'CA Total TTC',val:fmtK(d.kpi.caTotalTTC),raw:d.kpi.caTotalTTC,prevRaw:prev?.kpi.caTotalTTC,kc:'#44937d'},
+    {lbl:'Stagiaires',val:fmt(d.kpi.stagiaires),raw:d.kpi.stagiaires,prevRaw:prev?.kpi.stagiaires,kc:'#2d6a9f'},
+    {lbl:'Panier moyen',val:fmt(d.kpi.panierMoyen)+' €',raw:d.kpi.panierMoyen,prevRaw:prev?.kpi.panierMoyen,kc:'#e8723a'},
+    {lbl:'Durée moyenne',val:d.kpi.dureeMoyenne.toFixed(1)+' sem',raw:d.kpi.dureeMoyenne,prevRaw:prev?.kpi.dureeMoyenne,kc:'#7b5ea7'},
+    {lbl:'Vente directe',val:fmtK(d.kpi.venteDirect.ca),raw:d.kpi.venteDirect.ca,prevRaw:prev?.kpi.venteDirect.ca,kc:'#44937d',sub:d.kpi.venteDirect.pct+'% du CA · Panier '+fmt(d.kpi.venteDirect.panier)+' €'}
+  ];
+  document.getElementById('kpiGrid').innerHTML=kpis.map(k=>{
+    let evoH='';
+    if(prev&&k.prevRaw!=null){
+      const pct=calcEvo(k.raw,k.prevRaw);
+      const col=getEvolutionColor(pct);
+      const cl=col==='green'?'g':col==='red'?'r':'n';
+      const arr=pct>0?'↑':pct<0?'↓':'→';
+      const diff=k.lbl.includes('€')||k.lbl==='CA Total TTC'||k.lbl==='Vente directe'
+        ?(pct>0?'+':'')+fmtK(k.raw-k.prevRaw)
+        :(pct>0?'+':'')+fmt(k.raw-k.prevRaw);
+      evoH=`<div class="kpi-evo ${cl}"><span class="badge">${arr} ${fmtPct(pct)}</span><span style="color:var(--tx2);font-size:10px;font-weight:400">vs ${prevY}</span></div><div class="kpi-sub">${diff} vs ${prevY}</div>`;
+    }
+    return `<div class="kpi" style="--kc:${k.kc}"><div class="kpi-lbl">${k.lbl}</div><div class="kpi-val">${k.val}</div>${evoH}${k.sub?`<div class="kpi-sub" style="margin-top:4px">${k.sub}</div>`:''}`;
+  }).join('');
+}
+
+// Tabs
+function buildTabs(){
+  const tabs=['Vue globale','Segments','Pays & marchés','Programmes','Profil client'];
+  document.getElementById('tabBar').innerHTML=tabs.map((t,i)=>
+    `<button class="tab${i===0?' active':''}" onclick="switchTab(${i})">${t}</button>`
+  ).join('');
+}
+
+let curTab=0;
+function switchTab(i){
+  document.querySelectorAll('.tc').forEach(e=>e.classList.remove('show'));
+  document.getElementById('tc'+i).classList.add('show');
+  document.querySelectorAll('.tab').forEach((e,j)=>e.classList.toggle('active',j===i));
+  curTab=i;
+  setTimeout(()=>renderTab(i),30);
+}
+
+function renderTab(i){
+  const d=D();
+  if(i===0){
+    mC('chSaison',{type:'bar',data:{labels:d.mensuel.labels,datasets:[{label:'CA TTC',data:d.mensuel.ca,backgroundColor:d.mensuel.ca.map((v,idx)=>idx===6?'#e8723a':'rgba(45,106,159,.6)'),borderRadius:4}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtK(c.raw)}}},scales:{y:{ticks:{callback:v=>fmtK(v)}}}}});
+    mC('chSeg',{type:'doughnut',data:{labels:['Juniors','Groupes','Adultes'],datasets:[{data:[d.segments.juniors.ca,d.segments.groupes.ca,d.segments.adultes.ca],backgroundColor:['#e8723a','#44937d','#1a3c5e'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>fmtK(c.raw)}}}}});
+    mC('chPays0',{type:'bar',data:{labels:d.pays.map(p=>p.n),datasets:[{label:'CA',data:d.pays.map(p=>p.ca),backgroundColor:C,borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtK(c.raw)}}},scales:{x:{ticks:{callback:v=>fmtK(v)}}}}});
+  }
+  if(i===1){
+    const segs=['juniors','groupes','adultes'];
+    const names={juniors:'Juniors',groupes:'Groupes (PGR)',adultes:'Adultes'};
+    document.getElementById('segCards').innerHTML=segs.map(s=>{
+      const sg=d.segments[s];
+      return `<div class="seg-card" style="border:1px solid ${SEG_C[s]}44"><div class="seg-title" style="color:${SEG_C[s]}">${names[s]}</div><div class="seg-g"><div><div class="seg-l">CA TTC</div><div class="seg-v">${fmtK(sg.ca)}</div></div><div><div class="seg-l">Stagiaires</div><div class="seg-v">${fmt(sg.stagiaires)}</div></div><div><div class="seg-l">Panier moy.</div><div class="seg-v" style="font-size:15px">${fmt(sg.panierMoyen)} €</div></div><div><div class="seg-l">Durée moy.</div><div class="seg-v" style="font-size:15px">${sg.dureeMoyenne} sem</div></div></div></div>`;
+    }).join('');
+    const cx=d.crossSegPays;
+    mC('chCross',{type:'bar',data:{labels:cx.map(c=>c.p),datasets:[{label:'Adultes',data:cx.map(c=>c.A),backgroundColor:'#1a3c5e'},{label:'Juniors',data:cx.map(c=>c.J),backgroundColor:'#e8723a'},{label:'Groupes',data:cx.map(c=>c.G),backgroundColor:'#44937d'}]},options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtK(c.raw)}},legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>fmtK(v)}}}}});
+  }
+  if(i===2){
+    mC('chPays2',{type:'bar',data:{labels:d.pays.map(p=>p.n),datasets:[{label:'CA',data:d.pays.map(p=>p.ca),backgroundColor:C,borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtK(c.raw)}}},scales:{x:{ticks:{callback:v=>fmtK(v)}}}}});
+    mC('chTO',{type:'bar',data:{labels:d.agences.map(a=>a.n),datasets:[{label:'CA',data:d.agences.map(a=>a.ca),backgroundColor:'#e8723a',borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtK(c.raw)}}},scales:{x:{ticks:{callback:v=>fmtK(v)}}}}});
+    const tb=document.getElementById('paysTb');tb.innerHTML='';
+    d.pays.forEach(p=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${p.n}</td><td>${fmt(p.nb)}</td><td>${fmtK(p.ca)}</td><td>${fmt(Math.round(p.ca/p.nb))} €</td><td>${(p.ca/d.kpi.caTotalTTC*100).toFixed(1)}%</td>`;tb.appendChild(tr);});
+  }
+  if(i===3){
+    mC('chProg',{type:'doughnut',data:{labels:d.programmes.map(p=>p.n),datasets:[{data:d.programmes.map(p=>p.nb),backgroundColor:C,borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{padding:10,font:{size:10}}},tooltip:{callbacks:{label:c=>fmt(c.raw)+' stagiaires'}}}}});
+    document.getElementById('progCards').innerHTML=d.programmes.map((p,i)=>`<div class="prog-card"><div><div style="font-size:13px;font-weight:600;color:#e8edf2">${p.n}</div><div style="font-size:11px;color:var(--tx2)">${fmt(p.nb)} stagiaires</div></div><div style="font-size:18px;font-weight:800;color:${C[i]}">${p.pct}%</div></div>`).join('');
+    const el=document.getElementById('ecoleList');el.innerHTML='';
+    d.ecoles.forEach(([n,nb],i)=>{el.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:5px 10px;background:${i%2===0?'var(--bg3)':'transparent'};border-radius:5px"><span style="color:var(--tx3)">${n}</span><span style="color:var(--tx2);font-family:'Space Mono',monospace">${nb}</span></div>`;});
+  }
+  if(i===4){
+    const p=d.profil;
+    mC('chAge',{type:'bar',data:{labels:p.tranches.map(t=>t.n),datasets:[{label:'CA',data:p.tranches.map(t=>t.ca),backgroundColor:C,borderRadius:4}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtK(c.raw)}}},scales:{y:{ticks:{callback:v=>fmtK(v)}}}}});
+    const pct=Math.round(p.genre.femmes/(p.genre.femmes+p.genre.hommes)*100);
+    mC('chSexe',{type:'doughnut',data:{labels:[`Femmes (${pct}%)`,`Hommes (${100-pct}%)`],datasets:[{data:[p.genre.femmes,p.genre.hommes],backgroundColor:['#2d6a9f','#e8723a'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom'}}}});
+    const nb=document.getElementById('niveauBars');nb.innerHTML='';
+    const tot=d.kpi.stagiaires;
+    p.niveaux.forEach(([n,v]=[],i2)=>{
+      const item=p.niveaux[i2];const pn=(item.nb/tot*100);
+      nb.innerHTML+=`<div class="bar-row"><div class="bar-lab"><span>${item.n}</span><span>${fmt(item.nb)} (${pn.toFixed(1)}%)</span></div><div class="bar-bg"><div class="bar-f" style="background:${C[i2]};width:${Math.min(pn*2.5,100)}%"></div></div></div>`;
+    });
+    document.getElementById('insightList').innerHTML=d.insights.profil.map(x=>`<div class="insight">${x.txt}</div>`).join('');
+  }
+}
+
+buildYearSel();buildKPI();buildTabs();
+const urlTab=parseInt(params.get('tab')||'0');
+switchTab(urlTab);
+</script>
+</body>
+</html>
