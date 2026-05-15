@@ -1,13 +1,34 @@
-/**
- * CIA — Centre International d'Antibes
- * Données centralisées multi-années
- * ─────────────────────────────────────────────────────
- * Pour ajouter une nouvelle année (ex: 2025) :
- *   1. Ajouter une entrée dans CIA_DATA avec la clé "2025"
- *   2. Remplir tous les champs selon la même structure
- *   3. Sauvegarder ce fichier
- * ─────────────────────────────────────────────────────
- */
+// =============================================================================
+// CIA — Centre International d'Antibes
+// Fichier de données centralisé — data.js
+// =============================================================================
+// Ce fichier contient TOUTES les données utilisées par le dashboard.
+// Il est chargé par : index.html, dashboard.html, comparaison.html
+//
+// DONNÉES PRÉSENTES :
+//   - 2023 : données complètes extraites de CIA_2023_Dashboard.html
+//   - 2024 : données complètes extraites de CIA_2024_Dashboard.html
+//
+// RÈGLE ABSOLUE :
+//   ❌ Ne jamais supprimer ni modifier les données existantes
+//   ❌ Ne jamais inventer des chiffres
+//   ✅ Toujours ajouter de nouvelles données EN PLUS des existantes
+// =============================================================================
+
+
+// =============================================================================
+// COMMENT AJOUTER UNE NOUVELLE ANNÉE (ex: 2025 ou 2026)
+// =============================================================================
+// 1. Copier le bloc complet d'une année existante (ex: le bloc "2024" ci-dessous)
+// 2. Changer la clé : "2024" → "2025"
+// 3. Remplacer TOUS les chiffres par les données réelles de la nouvelle année
+// 4. Ne laisser aucune valeur à 0 ou fictive
+// 5. Choisir une couleur distincte dans meta.couleur
+// 6. Sauvegarder data.js → le dashboard détecte l'année automatiquement
+// 7. Faire un git push → le site en ligne se met à jour
+//
+// ⚠️ Ne jamais écraser ni modifier les années 2023 et 2024 déjà présentes.
+// =============================================================================
 
 const CIA_DATA = {
 
@@ -221,28 +242,143 @@ const CIA_DATA = {
     }
   }
 
-  // ─── AJOUTER 2025 ICI ───────────────────────────────────
+  // ===========================================================================
+  // EMPLACEMENT RÉSERVÉ — DONNÉES 2025
+  // ===========================================================================
+  // Décommenter et remplir avec les vraies données fournies par CIA.
+  // Respecter exactement la même structure que les années 2023 et 2024.
+  // NE PAS inventer de chiffres. Attendre les données réelles.
+  //
   // "2025": {
-  //   meta: { annee: 2025, label: "Données 2025", couleur: "#44937d" },
-  //   kpi: { caTotalTTC: 0, stagiaires: 0, panierMoyen: 0, dureeMoyenne: 0,
-  //          venteDirect: { ca: 0, pct: 0, panier: 0 } },
-  //   mensuel: { labels: [...], ca: [...] },
-  //   segments: { juniors: {...}, groupes: {...}, adultes: {...} },
-  //   pays: [...], agences: [...], programmes: [...], profil: {...}, crossSegPays: [...]
-  // }
+  //   meta: {
+  //     annee: 2025,
+  //     label: "Données 2025",
+  //     couleur: "#44937d"   // choisir une couleur différente des autres années
+  //   },
+  //   kpi: {
+  //     caTotalTTC:   0,     // ← Chiffre d'affaires total TTC annuel
+  //     stagiaires:   0,     // ← Nombre total de stagiaires/étudiants
+  //     panierMoyen:  0,     // ← CA total / nombre de stagiaires
+  //     dureeMoyenne: 0,     // ← Durée moyenne en semaines
+  //     venteDirect: { ca: 0, pct: 0, panier: 0 }
+  //   },
+  //   mensuel: {
+  //     labels: ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"],
+  //     ca:     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  // 12 valeurs CA mensuel TTC
+  //   },
+  //   segments: {
+  //     juniors: { ca: 0, stagiaires: 0, panierMoyen: 0, dureeMoyenne: 0 },
+  //     groupes: { ca: 0, stagiaires: 0, panierMoyen: 0, dureeMoyenne: 0 },
+  //     adultes: { ca: 0, stagiaires: 0, panierMoyen: 0, dureeMoyenne: 0 }
+  //   },
+  //   pays:         [ /* { n: "Pays", nb: 0, ca: 0 }, ... top 10 */ ],
+  //   agences:      [ /* { n: "Agence", ca: 0 }, ... top 10 */ ],
+  //   programmes:   [ /* { n: "Programme", nb: 0, pct: 0.0 }, ... */ ],
+  //   crossSegPays: [ /* { p: "Pays", A: 0, J: 0, G: 0 }, ... */ ],
+  //   ecoles:       [ /* ["Nom école", nb], ... top 10 */ ],
+  //   profil: {
+  //     genre:    { femmes: 0, hommes: 0 },
+  //     tranches: [ /* { n: "tranche", ca: 0 }, ... */ ],
+  //     niveaux:  [ /* { n: "niveau", nb: 0 }, ... */ ]
+  //   },
+  //   insights: { profil: [ /* { txt: "...", icon: "..." }, ... */ ] }
+  // },
+
+  // ===========================================================================
+  // EMPLACEMENT RÉSERVÉ — DONNÉES 2026
+  // ===========================================================================
+  // Même structure que 2025. À remplir quand les données seront disponibles.
+  //
+  // "2026": { ... }
 
 };
 
-// ─── Couleur d'évolution (règle CIA) ─────────────────────────────────────────
+// =============================================================================
+// RÈGLE COULEUR D'ÉVOLUTION — Règle CIA (s'applique partout dans le dashboard)
+// =============================================================================
+// +5% ou plus  → vert  (bonne performance)
+// entre -5% et +5% → neutre/bleu (stable)
+// -5% ou moins → rouge (baisse significative)
+// =============================================================================
 function getEvolutionColor(pct) {
   if (pct >= 5)  return "green";
   if (pct <= -5) return "red";
   return "neutral";
 }
 
-// ─── Helpers globaux ─────────────────────────────────────────────────────────
+// ─── Helpers globaux (ne pas modifier) ───────────────────────────────────────
 const fmt    = v => new Intl.NumberFormat('fr-FR').format(Math.round(v));
 const fmtK   = v => v >= 1e6 ? (v/1e6).toFixed(1)+' M€' : v >= 1e3 ? Math.round(v/1e3)+' K€' : v+' €';
 const fmtPct = v => (v > 0 ? "+" : "") + v.toFixed(1) + "%";
 const calcEvo = (current, prev) => prev === 0 ? 0 : ((current - prev) / Math.abs(prev)) * 100;
 const anneesDisponibles = () => Object.keys(CIA_DATA).sort((a,b) => b - a);
+
+
+// =============================================================================
+// SUIVI HEBDOMADAIRE — Structure préparée (à activer quand les données arrivent)
+// =============================================================================
+// Chaque semaine, CIA fournit les ventes de la semaine écoulée.
+// Ces données alimenteront une future page "Suivi hebdomadaire".
+//
+// COMMENT AJOUTER LES VENTES HEBDOMADAIRES :
+// 1. Identifier la semaine (ex: "2025-S20" = année 2025, semaine 20)
+// 2. Ajouter un objet dans le tableau CIA_HEBDO ci-dessous
+// 3. Respecter exactement le même format que les semaines existantes
+// 4. Ne jamais supprimer les semaines précédentes (elles servent aux comparaisons)
+// 5. Faire un git push → le site se met à jour automatiquement
+//
+// COMPARAISONS DISPONIBLES UNE FOIS LES DONNÉES REMPLIES :
+//   • CA semaine N  vs  CA semaine N-1  (évolution semaine précédente)
+//   • CA semaine N  vs  même semaine de l'année précédente
+//   • Cumul depuis début d'année  vs  cumul même période année précédente
+//
+// STRUCTURE D'UNE SEMAINE :
+//   {
+//     semaine:    "2025-S20",      // identifiant unique : AAAA-SXX
+//     annee:      2025,            // année
+//     numeroSem:  20,              // numéro de semaine ISO
+//     dateDebut:  "2025-05-12",    // lundi de la semaine
+//     dateFin:    "2025-05-18",    // dimanche de la semaine
+//     ca:         0,               // CA TTC de la semaine
+//     ventes:     0,               // nombre de réservations/ventes
+//     stagiaires: 0,               // nombre de stagiaires concernés
+//     topPays:    [],              // ex: [{n:"Allemagne", ca:0, nb:0}]
+//     topProg:    [],              // ex: [{n:"Château Juniors", nb:0}]
+//     segments: {
+//       juniors: { ca: 0, nb: 0 },
+//       groupes: { ca: 0, nb: 0 },
+//       adultes: { ca: 0, nb: 0 }
+//     }
+//   }
+// =============================================================================
+
+const CIA_HEBDO = [
+
+  // ===========================================================================
+  // VENTES HEBDOMADAIRES — À REMPLIR AU FUR ET À MESURE
+  // ===========================================================================
+  // Exemple (décommenter et remplir avec les vraies données) :
+  //
+  // {
+  //   semaine:    "2025-S01",
+  //   annee:      2025,
+  //   numeroSem:  1,
+  //   dateDebut:  "2025-01-06",
+  //   dateFin:    "2025-01-12",
+  //   ca:         0,
+  //   ventes:     0,
+  //   stagiaires: 0,
+  //   topPays:    [ /* {n:"Pays", ca:0, nb:0} */ ],
+  //   topProg:    [ /* {n:"Programme", nb:0} */ ],
+  //   segments:   { juniors:{ca:0,nb:0}, groupes:{ca:0,nb:0}, adultes:{ca:0,nb:0} }
+  // },
+
+];
+
+// Helpers hebdomadaires (actifs une fois CIA_HEBDO rempli)
+const getSemaine = id => CIA_HEBDO.find(s => s.semaine === id);
+const getSemainesAnnee = annee => CIA_HEBDO.filter(s => s.annee === annee).sort((a,b) => a.numeroSem - b.numeroSem);
+const getCumulAnnee = (annee, jusquaSemaine) =>
+  getSemainesAnnee(annee)
+    .filter(s => s.numeroSem <= jusquaSemaine)
+    .reduce((sum, s) => sum + s.ca, 0);
