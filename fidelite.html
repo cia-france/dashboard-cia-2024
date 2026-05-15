@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIA — Fidélité des stagiaires</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<script src="fidelite.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js" defer></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070c14;--bg2:#0b1220;--bg3:#0f1a2e;--bd:#1a2e48;--bd2:#243d5e;--tx:#c8d8e8;--tx2:#6b8299;--tx3:#8faab8;--ac:#2d6a9f;--gr:#2ecc71;--rd:#e74c3c;--or:#e8723a;--pp:#a259c7}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;min-height:100vh}
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:100}
+.s-logo{padding:24px 20px;border-bottom:1px solid var(--bd)}
+.s-badge{font-size:24px;font-weight:800;background:linear-gradient(135deg,#2d6a9f,#44937d);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.s-sub{font-size:9px;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin-top:2px;font-family:'Space Mono',monospace}
+.s-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.s-sec{font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;padding:10px 10px 4px}
+.s-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;color:var(--tx3);font-size:12px;font-weight:500;text-decoration:none;transition:.15s}
+.s-item:hover{background:var(--bg3);color:#e8edf2}
+.s-item.active{background:linear-gradient(90deg,#1a3c5e,transparent);color:#e8edf2;border-left:3px solid var(--ac);padding-left:7px}
+.s-foot{padding:12px 16px;border-top:1px solid var(--bd);font-size:10px;color:var(--tx2);font-family:'Space Mono',monospace}
+.dot{display:inline-block;width:7px;height:7px;background:var(--gr);border-radius:50%;margin-right:5px;box-shadow:0 0 6px var(--gr);animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+
+.main{margin-left:220px;min-height:100vh}
+.topbar{background:rgba(11,18,32,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-title{font-size:16px;font-weight:700;color:#e8edf2}
+.tb-meta{font-size:11px;color:var(--tx2);font-family:'Space Mono',monospace}
+
+.content{padding:28px}
+
+/* Filtres segments */
+.seg-tabs{display:flex;gap:8px;margin-bottom:24px;padding:6px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;width:fit-content}
+.seg-btn{padding:8px 18px;border-radius:7px;border:none;background:transparent;color:var(--tx3);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
+.seg-btn:hover{color:#e8edf2;background:var(--bg3)}
+.seg-btn.active{background:var(--ac);color:#fff}
+.seg-btn .count{font-family:'Space Mono',monospace;font-size:11px;opacity:.7;margin-left:6px}
+
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px}
+.kpi-card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;transition:.2s}
+.kpi-card:hover{transform:translateY(-2px);border-color:var(--bd2)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--bar-color,var(--ac));opacity:.85}
+.kpi-label{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;font-weight:600}
+.kpi-val{font-size:28px;font-weight:800;color:#e8edf2;line-height:1;margin-bottom:4px}
+.kpi-sub{font-size:11px;color:var(--tx2);margin-top:4px}
+
+/* Sections */
+.section{margin-bottom:32px}
+.section-title{font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.section-title::before{content:'';width:3px;height:13px;background:var(--ac);border-radius:2px}
+.section-desc{font-size:12px;color:var(--tx2);margin-bottom:14px;margin-top:-8px;line-height:1.6}
+
+/* Panneaux graphiques */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:1100px){.g2{grid-template-columns:1fr}}
+.panel{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:18px;min-height:300px}
+.panel-title{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:14px}
+.canvas-wrap{position:relative;height:260px}
+
+/* Flux annee -> annee */
+.flow-grid{display:flex;gap:14px;flex-wrap:wrap;align-items:stretch;justify-content:flex-start}
+.flow-card{flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;position:relative}
+.flow-card .from-to{font-family:'Space Mono',monospace;font-size:10px;color:var(--tx2);letter-spacing:1.5px;margin-bottom:8px;text-transform:uppercase}
+.flow-card .nb{font-size:24px;font-weight:800;color:#e8edf2;line-height:1;margin-bottom:6px}
+.flow-card .pct{font-size:11px;color:var(--gr);font-weight:600}
+.flow-card .label{font-size:11px;color:var(--tx2);margin-top:4px}
+
+/* Tables */
+.tbl-wrap{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 14px;text-align:left;font-size:12px;border-bottom:1px solid var(--bd)}
+th{background:var(--bg3);color:var(--tx2);font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:10px;position:sticky;top:0}
+td{color:var(--tx)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(45,106,159,.05)}
+td.num{font-family:'Space Mono',monospace;text-align:right;color:#e8edf2}
+td.yr{font-family:'Space Mono',monospace;color:var(--tx3);font-size:11px}
+td.rank{font-family:'Space Mono',monospace;color:var(--tx2);width:38px}
+.badge-seg{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace}
+.bs-J{background:rgba(45,106,159,.18);color:#5ea3d4}
+.bs-A{background:rgba(232,114,58,.18);color:#e8723a}
+.bs-X{background:rgba(107,130,153,.15);color:var(--tx2)}
+.yr-chip{display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(45,106,159,.15);color:#5ea3d4;font-family:'Space Mono',monospace;font-size:10px;margin-right:3px}
+
+/* Topbar right */
+.topbar-right{display:flex;align-items:center;gap:0}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="s-logo"><div class="s-badge">CIA</div><div class="s-sub">Centre International d'Antibes</div></div>
+  <nav class="s-nav">
+    <div class="s-sec">Navigation</div>
+    <a class="s-item" href="index.html"><span>🏠</span> Accueil</a>
+    <a class="s-item" href="dashboard.html"><span>📊</span> Dashboard annuel</a>
+    <a class="s-item" href="comparaison.html"><span>⚖️</span> Comparaison</a>
+    <a class="s-item active" href="#"><span>💚</span> Fidélité</a>
+    <div class="s-sec">Vues</div>
+    <a class="s-item" href="#kpis"><span>📈</span> KPIs</a>
+    <a class="s-item" href="#flux"><span>🔀</span> Flux annuels</a>
+    <a class="s-item" href="#topfid"><span>🏆</span> Top fidèles</a>
+    <a class="s-item" href="#topdep"><span>💰</span> Top dépensiers</a>
+  </nav>
+  <div class="s-foot"><span class="dot"></span>Accès réservé<br>v2.0 — Mai 2026</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title">Fidélité des stagiaires</div>
+      <div class="tb-meta">Analyse multi-années · 2023 → 2026</div>
+    </div>
+    <div class="topbar-right">
+      <div class="tb-meta" id="metaInfo"></div>
+      <button class="theme-toggle" type="button" aria-label="Changer le thème">
+        <span class="tt-icon">☀️</span>
+        <span class="tt-label">Clair</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Filtre segment -->
+    <div class="seg-tabs" id="segTabs"></div>
+
+    <!-- KPIs -->
+    <section class="section" id="kpis">
+      <div class="section-title">Indicateurs de fidélité</div>
+      <div class="kpi-strip" id="kpiStrip"></div>
+    </section>
+
+    <!-- Détail par année -->
+    <section class="section">
+      <div class="section-title">Détail par année — nouveaux vs revenants</div>
+      <div class="section-desc">Un stagiaire est « revenant » s'il avait déjà séjourné lors d'une année antérieure (selon les données disponibles).</div>
+      <div class="g2">
+        <div class="panel">
+          <div class="panel-title">Répartition annuelle</div>
+          <div class="canvas-wrap"><canvas id="chYear"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">CA total par année (€)</div>
+          <div class="canvas-wrap"><canvas id="chCA"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flux année -> année+1 -->
+    <section class="section" id="flux">
+      <div class="section-title">Flux d'une année à la suivante</div>
+      <div class="section-desc">Nombre de stagiaires présents l'année N qui reviennent l'année N+1, et taux de rétention correspondant.</div>
+      <div class="flow-grid" id="flowGrid"></div>
+    </section>
+
+    <!-- Top fidèles -->
+    <section class="section" id="topfid">
+      <div class="section-title">Top 30 stagiaires les plus fidèles</div>
+      <div class="section-desc">Classés par nombre d'années de présence, puis par CA TTC cumulé.</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Stagiaire</th><th>Années présentes</th><th>Nb années</th><th>Nb séjours</th><th>Segment</th><th class="num">TTC cumulé</th></tr>
+          </thead>
+          <tbody id="tblFid"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Top dépensiers -->
+    <section class="section" id="topdep">
+      <div class="section-title">Top 30 stagiaires par CA cumulé</div>
+      <div class="section-desc">Stagiaires ayant généré le plus de chiffre d'affaires TTC sur la période 2023-2026.</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Stagiaire</th><th>TTC cumulé</th><th>Nb séjours</th><th>Années présentes</th><th>Segment</th></tr>
+          </thead>
+          <tbody id="tblDep"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+// =============================================================================
+// FIDELITE — Page logique
+// =============================================================================
+
+const fmt = v => new Intl.NumberFormat('fr-FR').format(Math.round(v));
+const fmtK = v => v >= 1e6 ? (v/1e6).toFixed(2)+' M€' : v >= 1e3 ? Math.round(v/1e3)+' K€' : v+' €';
+
+// Etat
+let currentSeg = 'all';
+const charts = {};
+
+function getStats(){ return CIA_FIDELITE.segments[currentSeg]; }
+function years(){ return CIA_FIDELITE.years; }
+
+function renderSegTabs(){
+  const segMeta = [
+    { key: 'all', label: 'Tous',    count: CIA_FIDELITE.segments.all.totalUnique },
+    { key: 'J',   label: 'Juniors', count: CIA_FIDELITE.segments.J.totalUnique },
+    { key: 'A',   label: 'Adultes', count: CIA_FIDELITE.segments.A.totalUnique }
+  ];
+  const el = document.getElementById('segTabs');
+  el.innerHTML = segMeta.map(s =>
+    `<button class="seg-btn ${s.key === currentSeg ? 'active' : ''}" data-seg="${s.key}">
+       ${s.label}<span class="count">${fmt(s.count)}</span>
+     </button>`
+  ).join('');
+  el.querySelectorAll('.seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSeg = btn.dataset.seg;
+      renderAll();
+    });
+  });
+}
+
+function renderKPIs(){
+  const s = getStats();
+  const ys = years();
+  const lastY = ys[ys.length - 1];
+  const lastPY = s.perYear[lastY];
+  const cards = [
+    { lbl: 'Stagiaires uniques', val: fmt(s.totalUnique), sub: `${ys[0]} → ${lastY}`, color: 'var(--ac)' },
+    { lbl: 'Fidèles (2+ années)', val: fmt(s.nbFideles), sub: `${s.tauxFidelite}% du total`, color: 'var(--gr)' },
+    { lbl: 'Taux de fidélité',   val: s.tauxFidelite + '%', sub: 'Stagiaires revenus au moins une fois', color: 'var(--or)' },
+    { lbl: `Revenants en ${lastY}`, val: fmt(lastPY ? lastPY.returning : 0), sub: lastPY ? `sur ${fmt(lastPY.total)} stagiaires` : '', color: 'var(--pp)' }
+  ];
+  document.getElementById('kpiStrip').innerHTML = cards.map(c =>
+    `<div class="kpi-card" style="--bar-color:${c.color}">
+       <div class="kpi-label">${c.lbl}</div>
+       <div class="kpi-val">${c.val}</div>
+       <div class="kpi-sub">${c.sub}</div>
+     </div>`
+  ).join('');
+}
+
+function renderFlow(){
+  const s = getStats();
+  const ys = years();
+  let html = '';
+  for (let i = 0; i < ys.length - 1; i++) {
+    const y1 = ys[i], y2 = ys[i+1];
+    const k = y1 + '->' + y2;
+    const ret = s.flows[k] || 0;
+    const total1 = s.perYear[y1] ? s.perYear[y1].total : 0;
+    const pct = total1 > 0 ? (ret / total1 * 100).toFixed(1) : '0.0';
+    html += `<div class="flow-card">
+      <div class="from-to">${y1} → ${y2}</div>
+      <div class="nb">${fmt(ret)}</div>
+      <div class="pct">${pct}% rétention</div>
+      <div class="label">stagiaires revenus l'année suivante</div>
+    </div>`;
+  }
+  document.getElementById('flowGrid').innerHTML = html;
+}
+
+function renderCharts(){
+  const s = getStats();
+  const ys = years();
+  const labels = ys.map(String);
+  const newArr = ys.map(y => s.perYear[y].new);
+  const retArr = ys.map(y => s.perYear[y].returning);
+  const caArr  = ys.map(y => s.perYear[y].ca);
+
+  // Couleurs - lues dynamiquement pour s'adapter au theme
+  const css = getComputedStyle(document.body);
+  const txCol = css.getPropertyValue('--tx2').trim() || '#6b8299';
+  const grid  = (document.body.dataset.theme === 'light') ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.06)';
+
+  // Chart 1 : Stacked bar new/returning
+  if (charts.year) charts.year.destroy();
+  charts.year = new Chart(document.getElementById('chYear'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Nouveaux',  data: newArr, backgroundColor: '#2d6a9f', stack: 's' },
+        { label: 'Revenants', data: retArr, backgroundColor: '#2ecc71', stack: 's' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: txCol, font: { size: 11 } } } },
+      scales: {
+        x: { stacked: true, ticks: { color: txCol }, grid: { color: grid } },
+        y: { stacked: true, ticks: { color: txCol }, grid: { color: grid }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Chart 2 : CA total par annee
+  if (charts.ca) charts.ca.destroy();
+  charts.ca = new Chart(document.getElementById('chCA'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label: 'CA TTC', data: caArr, backgroundColor: '#44937d', borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+                 tooltip: { callbacks: { label: c => fmtK(c.parsed.y) } } },
+      scales: {
+        x: { ticks: { color: txCol }, grid: { color: grid } },
+        y: { ticks: { color: txCol, callback: v => fmtK(v) }, grid: { color: grid }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function segBadge(seg){
+  const cls = seg === 'Juniors' ? 'bs-J' : seg === 'Adultes' ? 'bs-A' : 'bs-X';
+  return `<span class="badge-seg ${cls}">${seg || '—'}</span>`;
+}
+function yearsChips(ys){
+  return ys.map(y => `<span class="yr-chip">${y}</span>`).join('');
+}
+
+function renderTables(){
+  const s = getStats();
+  const fid = s.topFideles.slice(0, 30);
+  const dep = s.topDepensiers.slice(0, 30);
+
+  document.getElementById('tblFid').innerHTML = fid.map((r, i) =>
+    `<tr>
+       <td class="rank">${i+1}</td>
+       <td>${r.n}</td>
+       <td class="yr">${yearsChips(r.y)}</td>
+       <td class="num">${r.y.length}</td>
+       <td class="num">${r.nb}</td>
+       <td>${segBadge(r.s)}</td>
+       <td class="num">${fmt(r.ca)} €</td>
+     </tr>`
+  ).join('');
+
+  document.getElementById('tblDep').innerHTML = dep.map((r, i) =>
+    `<tr>
+       <td class="rank">${i+1}</td>
+       <td>${r.n}</td>
+       <td class="num">${fmt(r.ca)} €</td>
+       <td class="num">${r.nb}</td>
+       <td class="yr">${yearsChips(r.y)}</td>
+       <td>${segBadge(r.s)}</td>
+     </tr>`
+  ).join('');
+}
+
+function renderMeta(){
+  const s = getStats();
+  document.getElementById('metaInfo').textContent =
+    `${fmt(s.totalUnique)} stagiaires · ${s.nbFideles} fidèles (${s.tauxFidelite}%)`;
+}
+
+function renderAll(){
+  // Re-render des tabs pour mettre a jour l'etat actif
+  document.querySelectorAll('.seg-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.seg === currentSeg);
+  });
+  renderKPIs();
+  renderFlow();
+  renderCharts();
+  renderTables();
+  renderMeta();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderSegTabs();
+  renderAll();
+
+  // Re-render des charts si l'utilisateur bascule le theme (pour les couleurs)
+  const btn = document.querySelector('.theme-toggle');
+  if (btn) btn.addEventListener('click', () => setTimeout(renderCharts, 50));
+});
+</script>
+</body>
+</html>
