@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="data.js"></script>
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js" defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 
@@ -387,7 +389,13 @@ canvas{max-height:200px;}
     <div>
       <div class="topbar-title">Dashboard Interne CIA</div>
     </div>
-    <div class="topbar-meta" id="topMeta">Chargement…</div>
+    <div class="topbar-right">
+      <div class="topbar-meta" id="topMeta">Chargement…</div>
+      <button class="theme-toggle" type="button" aria-label="Changer le thème">
+        <span class="tt-icon">☀️</span>
+        <span class="tt-label">Clair</span>
+      </button>
+    </div>
   </div>
 
   <!-- HERO -->

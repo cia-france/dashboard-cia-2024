@@ -6,6 +6,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="data.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js" defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#070c14;--bg2:#0b1220;--bg3:#0f1a2e;--bd:#1a2e48;--bd2:#243d5e;--tx:#c8d8e8;--tx2:#6b8299;--tx3:#8faab8;--ac:#2d6a9f;--gr:#2ecc71;--rd:#e74c3c}
@@ -99,7 +101,13 @@ td.neutral-c{color:var(--ac)}
       <div class="tb-title">Comparaison annuelle</div>
       <div class="tb-meta">Évolution des indicateurs clés entre deux années</div>
     </div>
-    <div style="font-size:11px;color:var(--tx2);font-family:'Space Mono',monospace">Règle ±5% activée</div>
+    <div class="topbar-right">
+      <div style="font-size:11px;color:var(--tx2);font-family:'Space Mono',monospace">Règle ±5% activée</div>
+      <button class="theme-toggle" type="button" aria-label="Changer le thème">
+        <span class="tt-icon">☀️</span>
+        <span class="tt-label">Clair</span>
+      </button>
+    </div>
   </div>
 
   <div class="content">

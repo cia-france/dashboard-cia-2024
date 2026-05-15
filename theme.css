@@ -1,0 +1,123 @@
+/* =============================================================================
+   CIA Dashboard — Thème clair / sombre
+   Bouton de bascule en haut à droite du topbar. Persistance localStorage.
+   ============================================================================= */
+
+/* ── Bouton bascule (commun aux 3 pages) ──────────────────────────────────── */
+.theme-toggle{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 12px;border-radius:8px;
+  border:1px solid var(--border,var(--bd,#1a2e48));
+  background:transparent;
+  color:var(--text3,var(--tx3,#8faab8));
+  font-size:12px;font-weight:600;cursor:pointer;
+  font-family:'Inter',sans-serif;
+  transition:all .15s ease;
+  user-select:none;
+  margin-left:12px;
+}
+.theme-toggle:hover{
+  background:var(--bg3,#0f1a2e);
+  color:#e8edf2;
+  border-color:var(--border2,var(--bd2,#243d5e));
+}
+.theme-toggle .tt-icon{font-size:14px;line-height:1}
+.theme-toggle .tt-label{font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;font-size:10px}
+
+/* Le topbar utilise justify-content:space-between → on englobe les éléments à droite */
+.topbar-right{display:flex;align-items:center;gap:0}
+
+/* =============================================================================
+   THÈME CLAIR — appliqué via <body data-theme="light">
+   ============================================================================= */
+body[data-theme="light"]{
+  /* index.html (nommage long) */
+  --bg:      #f6f8fb;
+  --bg2:     #ffffff;
+  --bg3:     #eef2f7;
+  --border:  #dde4ec;
+  --border2: #c5d2e0;
+  --text:    #2c3e50;
+  --text2:   #7a8a9a;
+  --text3:   #4a5e72;
+  --accent:  #2d6a9f;
+  --accent2: #dce8f4;
+  --green:   #1ea761;
+  --red:     #d04032;
+  --orange:  #d96a30;
+
+  /* dashboard.html + comparaison.html (nommage court) */
+  --bd:      #dde4ec;
+  --bd2:     #c5d2e0;
+  --tx:      #2c3e50;
+  --tx2:     #7a8a9a;
+  --tx3:     #4a5e72;
+  --ac:      #2d6a9f;
+  --gr:      #1ea761;
+  --rd:      #d04032;
+}
+
+/* ── Overrides des couleurs codées en dur en mode clair ───────────────────── */
+
+/* Texte "brillant" #e8edf2 → texte sombre */
+body[data-theme="light"] .logo-badge,
+body[data-theme="light"] .nav-item:hover,
+body[data-theme="light"] .nav-item.active,
+body[data-theme="light"] .s-item:hover,
+body[data-theme="light"] .s-item.active,
+body[data-theme="light"] .topbar-title,
+body[data-theme="light"] .tb-title,
+body[data-theme="light"] .hero-title,
+body[data-theme="light"] .kpi-card .kpi-val,
+body[data-theme="light"] .s-badge{
+  color:#1a2e48 !important;
+}
+
+/* Topbar background rgba(11,18,32,.X) → blanc translucide */
+body[data-theme="light"] .topbar{
+  background:rgba(255,255,255,0.85) !important;
+}
+
+/* Body noise overlay — réduire en mode clair */
+body[data-theme="light"]::before{
+  opacity:.4;
+  filter:invert(1);
+}
+
+/* Hero radial gradient — adoucir */
+body[data-theme="light"] .hero{
+  background:radial-gradient(ellipse 80% 60% at 50% -10%, rgba(45,106,159,.08), transparent) !important;
+}
+
+/* Sidebar active link gradient → tonalité plus claire */
+body[data-theme="light"] .nav-item.active{
+  background:linear-gradient(90deg,#dce8f4,transparent) !important;
+}
+body[data-theme="light"] .s-item.active{
+  background:linear-gradient(90deg,#dce8f4,transparent) !important;
+}
+
+/* KPI evolution badges — ajuster les fonds rgba (vert/rouge/bleu) en mode clair */
+body[data-theme="light"] .evo-green .badge{background:rgba(30,167,97,.12) !important;color:#1ea761 !important;}
+body[data-theme="light"] .evo-red   .badge{background:rgba(208,64,50,.12) !important;color:#d04032 !important;}
+body[data-theme="light"] .evo-neutral .badge{background:rgba(45,106,159,.12) !important;color:#2d6a9f !important;}
+
+/* Scrollbar dark — laisser au navigateur de gérer en mode clair */
+body[data-theme="light"]{color-scheme:light}
+
+/* Bouton thème en mode clair */
+body[data-theme="light"] .theme-toggle{
+  border-color:#dde4ec;
+  color:#4a5e72;
+}
+body[data-theme="light"] .theme-toggle:hover{
+  background:#eef2f7;
+  color:#1a2e48;
+  border-color:#c5d2e0;
+}
+
+/* Le statut "dot" pulsant — garder vert mais halo plus discret en mode clair */
+body[data-theme="light"] .status-dot,
+body[data-theme="light"] .dot{
+  box-shadow:0 0 4px rgba(30,167,97,.4) !important;
+}
