@@ -194,12 +194,10 @@ td.rank{font-family:'Space Mono',monospace;color:var(--tx2);width:38px}
 <script>
 // =============================================================================
 // FIDELITE — Page logique
+// (fmt et fmtK sont deja declares dans data.js — on les reutilise)
 // =============================================================================
 
-const fmt = v => new Intl.NumberFormat('fr-FR').format(Math.round(v));
-const fmtK = v => v >= 1e6 ? (v/1e6).toFixed(2)+' M€' : v >= 1e3 ? Math.round(v/1e3)+' K€' : v+' €';
-
-// Etat
+// Etat local de la page
 let currentSeg = 'all';
 const charts = {};
 
