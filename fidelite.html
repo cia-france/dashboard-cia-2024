@@ -375,14 +375,20 @@ function renderAll(){
   renderMeta();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function init(){
   renderSegTabs();
   renderAll();
-
   // Re-render des charts si l'utilisateur bascule le theme (pour les couleurs)
   const btn = document.querySelector('.theme-toggle');
   if (btn) btn.addEventListener('click', () => setTimeout(renderCharts, 50));
-});
+}
+
+// Le script etant en fin de body, DOMContentLoaded peut deja avoir ete tire
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
