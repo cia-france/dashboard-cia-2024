@@ -1,0 +1,132 @@
+/* =============================================================================
+   CIA Dashboard — Menu mobile (hamburger + sidebar coulissante)
+   Activation automatique sous 900px de large.
+   ============================================================================= */
+
+/* Bouton hamburger — masque sur desktop */
+.menu-toggle{
+  display:none;
+  width:38px;height:38px;
+  border:1px solid var(--border,var(--bd,#1a2e48));
+  background:transparent;
+  border-radius:8px;
+  cursor:pointer;
+  align-items:center;justify-content:center;
+  margin-right:10px;
+  color:var(--text3,var(--tx3,#8faab8));
+  padding:0;
+  flex-shrink:0;
+}
+.menu-toggle:hover{
+  background:var(--bg3,#0f1a2e);
+  color:#e8edf2;
+}
+.menu-toggle svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+
+/* Backdrop — visible quand le menu est ouvert sur mobile */
+.menu-backdrop{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.55);
+  z-index:99;
+  cursor:pointer;
+  backdrop-filter:blur(2px);
+}
+
+/* Empêche le scroll du body quand le menu est ouvert */
+body.menu-open{overflow:hidden}
+
+/* ─── BREAKPOINT MOBILE ──────────────────────────────────────────────────── */
+@media (max-width:900px){
+
+  /* Hamburger visible */
+  .menu-toggle{display:inline-flex}
+
+  /* Sidebar coulissante */
+  .sidebar{
+    transform:translateX(-100%);
+    transition:transform .25s ease;
+    width:280px !important;
+  }
+  body.menu-open .sidebar{
+    transform:translateX(0);
+    box-shadow:0 0 40px rgba(0,0,0,.6);
+  }
+  body.menu-open .menu-backdrop{display:block}
+
+  /* Main prend toute la largeur */
+  .main{margin-left:0 !important}
+
+  /* Topbar plus compact */
+  .topbar{padding:12px 14px !important}
+  .topbar-title,.tb-title{font-size:15px !important}
+  .topbar-meta,.tb-meta{font-size:10px !important}
+
+  /* Pour aligner le hamburger avec le titre dans le bloc de gauche du topbar */
+  .topbar > div:first-child{display:flex;align-items:center;min-width:0}
+  .topbar > div:first-child > div:not(.menu-toggle){min-width:0}
+
+  /* Le bloc droit du topbar : meta ID peut etre masque pour gagner de la place */
+  .topbar-right .tb-meta:not(.theme-toggle),
+  .topbar-right .topbar-meta{display:none}
+
+  /* Contenu */
+  .content{padding:16px !important}
+  .hero{padding:24px 18px 0 !important}
+  .hero-title{font-size:26px !important;line-height:1.15 !important}
+  .hero-desc{font-size:13px !important}
+  .kpi-strip{padding:0 18px 22px !important;gap:12px !important}
+  .kpi-strip,
+  .kpi-grid{grid-template-columns:repeat(2,1fr) !important}
+  .kpi-card .kpi-val,
+  .kpi-val{font-size:22px !important}
+  .section{padding:0 18px 26px !important}
+
+  /* Grilles 2 colonnes → 1 colonne */
+  .g2,
+  .year-grid,
+  .compare-grid,
+  .chart-grid{grid-template-columns:1fr !important}
+
+  /* Cartes de flux empilées */
+  .flow-card{min-width:100% !important;flex:none !important}
+  .flow-grid{flex-direction:column}
+
+  /* Tables : scroll horizontal */
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:560px}
+  th,td{padding:8px 10px !important;font-size:11px !important}
+
+  /* Onglets segments compacts */
+  .seg-tabs{flex-wrap:wrap}
+  .seg-btn{padding:7px 12px !important;font-size:12px !important}
+
+  /* Panneaux graphiques : hauteur réduite */
+  .panel{padding:14px !important;min-height:260px !important}
+  .canvas-wrap{height:220px !important}
+
+  /* Bouton thème : icone seule */
+  .theme-toggle .tt-label{display:none}
+  .theme-toggle{padding:7px 9px !important}
+}
+
+/* Très petits écrans : passer KPI strip sur 1 colonne */
+@media (max-width:480px){
+  .kpi-strip,
+  .kpi-grid{grid-template-columns:1fr !important}
+  .hero-title{font-size:22px !important}
+}
+
+/* Mode clair : ajustements pour le menu mobile */
+body[data-theme="light"] .menu-toggle{
+  border-color:#dde4ec;
+  color:#4a5e72;
+}
+body[data-theme="light"] .menu-toggle:hover{
+  background:#eef2f7;
+  color:#1a2e48;
+  border-color:#c5d2e0;
+}
+body[data-theme="light"] .menu-backdrop{
+  background:rgba(20,40,60,0.35);
+}
