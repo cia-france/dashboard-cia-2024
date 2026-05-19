@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIA — Anticipation de réservation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<script src="leadtime.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="mobile-menu.css">
+<script src="theme.js" defer></script>
+<script src="mobile-menu.js" defer></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070c14;--bg2:#0b1220;--bg3:#0f1a2e;--bd:#1a2e48;--bd2:#243d5e;--tx:#c8d8e8;--tx2:#6b8299;--tx3:#8faab8;--ac:#2d6a9f;--gr:#2ecc71;--rd:#e74c3c;--or:#e8723a;--pp:#a259c7}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;min-height:100vh}
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:100}
+.s-logo{padding:24px 20px;border-bottom:1px solid var(--bd)}
+.s-badge{font-size:24px;font-weight:800;background:linear-gradient(135deg,#2d6a9f,#44937d);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.s-sub{font-size:9px;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin-top:2px;font-family:'Space Mono',monospace}
+.s-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.s-sec{font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;padding:10px 10px 4px}
+.s-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;color:var(--tx3);font-size:12px;font-weight:500;text-decoration:none;transition:.15s}
+.s-item:hover{background:var(--bg3);color:#e8edf2}
+.s-item.active{background:linear-gradient(90deg,#1a3c5e,transparent);color:#e8edf2;border-left:3px solid var(--ac);padding-left:7px}
+.s-foot{padding:12px 16px;border-top:1px solid var(--bd);font-size:10px;color:var(--tx2);font-family:'Space Mono',monospace}
+.dot{display:inline-block;width:7px;height:7px;background:var(--gr);border-radius:50%;margin-right:5px;box-shadow:0 0 6px var(--gr);animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+
+.main{margin-left:220px;min-height:100vh}
+.topbar{background:rgba(11,18,32,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-title{font-size:16px;font-weight:700;color:#e8edf2}
+.tb-meta{font-size:11px;color:var(--tx2);font-family:'Space Mono',monospace}
+.topbar-right{display:flex;align-items:center;gap:0}
+
+.content{padding:28px}
+
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px}
+.kpi{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{transform:translateY(-2px);border-color:var(--bd2)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kc,var(--ac));opacity:.85}
+.kpi .lbl{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;font-weight:600}
+.kpi .val{font-size:30px;font-weight:800;color:#e8edf2;line-height:1;margin-bottom:6px}
+.kpi .unit{font-size:14px;color:var(--tx3);font-weight:600;margin-left:4px}
+.kpi .sub{font-size:11px;color:var(--tx2);margin-top:6px;line-height:1.5}
+.kpi .evo{display:inline-block;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace;margin-top:6px}
+.evo-g{background:rgba(46,204,113,.15);color:var(--gr)}
+.evo-r{background:rgba(231,76,60,.15);color:var(--rd)}
+.evo-n{background:rgba(107,130,153,.18);color:var(--tx3)}
+
+/* Onglets années */
+.year-tabs{display:flex;gap:8px;margin-bottom:24px;padding:6px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;width:fit-content;flex-wrap:wrap}
+.y-tab{padding:8px 18px;border-radius:7px;border:none;background:transparent;color:var(--tx3);font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Mono',monospace;transition:.15s}
+.y-tab:hover{color:#e8edf2;background:var(--bg3)}
+.y-tab.active{background:var(--ac);color:#fff}
+
+/* Sections */
+.section{margin-bottom:32px}
+.section-title{font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.section-title::before{content:'';width:3px;height:13px;background:var(--ac);border-radius:2px}
+.section-desc{font-size:12px;color:var(--tx2);margin-bottom:14px;margin-top:-8px;line-height:1.6}
+
+/* Notice */
+.notice{background:rgba(232,114,58,.08);border:1px solid rgba(232,114,58,.3);border-radius:10px;padding:12px 16px;margin-bottom:24px;font-size:12px;color:var(--tx3);line-height:1.6;display:flex;gap:10px}
+.notice .icon{font-size:18px;flex-shrink:0}
+
+/* Panels graphiques */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:1100px){.g2{grid-template-columns:1fr}}
+.panel{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:18px}
+.panel-title{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:14px}
+.canvas-wrap{position:relative;height:280px}
+
+/* Tableau */
+.tbl-wrap{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+.tbl-wrap-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 14px;text-align:right;font-size:12px;border-bottom:1px solid var(--bd);font-family:'Space Mono',monospace}
+th:first-child,td:first-child{text-align:left;font-family:'Inter',sans-serif}
+th{background:var(--bg3);color:var(--tx2);font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:10px}
+td{color:#e8edf2}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(45,106,159,.05)}
+
+/* Insight cards */
+.insights{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.insight{background:var(--bg2);border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.insight .icon{font-size:22px;flex-shrink:0}
+.insight .txt{font-size:12px;color:var(--tx3);line-height:1.6}
+.insight .txt b{color:#e8edf2;font-weight:700}
+
+@media (max-width:900px){
+  .kpi-strip{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:480px){
+  .kpi-strip{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="s-logo"><div class="s-badge">CIA</div><div class="s-sub">Centre International d'Antibes</div></div>
+  <nav class="s-nav">
+    <div class="s-sec">Navigation</div>
+    <a class="s-item" href="index.html"><span>🏠</span> Accueil</a>
+    <a class="s-item" href="dashboard.html"><span>📊</span> Dashboard annuel</a>
+    <a class="s-item" href="comparaison.html"><span>⚖️</span> Comparaison</a>
+    <a class="s-item" href="fidelite.html"><span>💚</span> Fidélité</a>
+    <a class="s-item" href="weekly.html"><span>🗓️</span> Suivi hebdomadaire</a>
+    <a class="s-item active" href="#"><span>⏱️</span> Anticipation</a>
+    <div class="s-sec">Années</div>
+    <div id="yearLinks"></div>
+    <script>
+      (function(){
+        var el = document.getElementById('yearLinks');
+        if (!el || typeof CIA_DATA === 'undefined') return;
+        var ys = Object.keys(CIA_DATA).sort(function(a,b){ return b - a; });
+        el.innerHTML = ys.map(function(y){
+          return '<a class="s-item" href="dashboard.html?annee=' + y + '">'
+               + '<span>📅</span> ' + y + '</a>';
+        }).join('');
+      })();
+    </script>
+  </nav>
+  <div class="s-foot"><span class="dot"></span>Accès réservé<br>v2.0 — Mai 2026</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title">Anticipation de réservation</div>
+      <div class="tb-meta">Combien de temps à l'avance les clients réservent — par année, segment, pays, mois</div>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-toggle" type="button" aria-label="Changer le thème">
+        <span class="tt-icon">☀️</span>
+        <span class="tt-label">Clair</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Onglets années -->
+    <div class="year-tabs" id="yearTabs"></div>
+
+    <!-- Notice 2025 si applicable -->
+    <div class="notice" id="dataNotice" style="display:none">
+      <span class="icon">⚠️</span>
+      <div id="dataNoticeText"></div>
+    </div>
+
+    <!-- KPI : moyenne, médiane, last minute, planifié -->
+    <section class="section">
+      <div class="section-title">Indicateurs clés de l'année sélectionnée</div>
+      <div class="kpi-strip" id="kpiStrip"></div>
+    </section>
+
+    <!-- Insights auto -->
+    <section class="section">
+      <div class="section-title">Lectures rapides</div>
+      <div class="insights" id="insights"></div>
+    </section>
+
+    <!-- Distribution + Segments -->
+    <section class="section">
+      <div class="g2">
+        <div class="panel">
+          <div class="panel-title">Distribution — combien de jours à l'avance ?</div>
+          <div class="canvas-wrap"><canvas id="chDist"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Lead time moyen par segment</div>
+          <div class="canvas-wrap"><canvas id="chSeg"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Par mois d'arrivée -->
+    <section class="section">
+      <div class="section-title">Lead time par mois d'arrivée</div>
+      <div class="section-desc">Quand les gens viennent en juillet (haute saison), combien de temps à l'avance ont-ils réservé ? Et en janvier ?</div>
+      <div class="panel">
+        <div class="canvas-wrap" style="height:300px"><canvas id="chMonth"></canvas></div>
+      </div>
+    </section>
+
+    <!-- Comparaison année par année -->
+    <section class="section">
+      <div class="section-title">Évolution entre années</div>
+      <div class="section-desc">Comparaison directe des indicateurs clés sur toutes les années disponibles.</div>
+      <div class="tbl-wrap">
+        <div class="tbl-wrap-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Année</th>
+                <th>Réservations</th>
+                <th>Moyenne</th>
+                <th>Médiane</th>
+                <th>p25</th>
+                <th>p75</th>
+                <th>≤ 7 j</th>
+                <th>≤ 30 j</th>
+                <th>&gt; 90 j</th>
+              </tr>
+            </thead>
+            <tbody id="yearTbl"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Top pays -->
+    <section class="section">
+      <div class="section-title">Lead time par pays (top 12 par volume)</div>
+      <div class="section-desc">Quels marchés anticipent le plus ? Utile pour le calendrier marketing.</div>
+      <div class="tbl-wrap">
+        <div class="tbl-wrap-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Pays</th>
+                <th>Réservations</th>
+                <th>Moyenne</th>
+                <th>Médiane</th>
+              </tr>
+            </thead>
+            <tbody id="countryTbl"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+// =============================================================================
+// LEAD TIME / ANTICIPATION — page logique
+// =============================================================================
+
+const L = CIA_LEADTIME;
+const YEARS = L.years.slice().sort(function(a,b){return b-a;});
+let currentYear = YEARS[0];
+let chDist, chSeg, chMonth;
+
+function getYear(y){ return L.perYear[String(y)]; }
+
+function renderTabs(){
+  document.getElementById('yearTabs').innerHTML = YEARS.map(function(y){
+    return '<button class="y-tab' + (y === currentYear ? ' active' : '') + '" data-y="' + y + '">' + y + '</button>';
+  }).join('');
+  document.querySelectorAll('.y-tab').forEach(function(b){
+    b.addEventListener('click', function(){
+      currentYear = parseInt(b.dataset.y, 10);
+      renderAll();
+    });
+  });
+}
+
+function renderNotice(){
+  var d = getYear(currentYear);
+  var el = document.getElementById('dataNotice');
+  var txt = document.getElementById('dataNoticeText');
+  // Notice si beaucoup de negatifs (>= 10% des donnees)
+  var ratioNeg = d.negative / (d.count + d.negative);
+  if (ratioNeg > 0.1) {
+    var pct = (ratioNeg * 100).toFixed(0);
+    txt.innerHTML = '<b>Note sur les données ' + currentYear + ' :</b> ' + pct + '% des lignes ont une date de création postérieure à la date d\'arrivée (' + fmt(d.negative) + ' lignes). Elles sont exclues du calcul car elles correspondent probablement à des modifications de dossier après séjour. L\'échantillon utilisé reste de <b>' + fmt(d.count) + ' réservations valides</b>.';
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function evoVs(prev, curr, lowerIsBetter){
+  if (prev === null || prev === undefined || prev === 0) return '';
+  var diff = curr - prev;
+  var pct = (diff / Math.abs(prev)) * 100;
+  // Pour le panier moyen / volume, plus c'est haut mieux c'est.
+  // Pour lead time : la direction « bien/mal » dépend du contexte.
+  // On se contente de neutre : afficher la variation sans jugement.
+  var cl = Math.abs(pct) < 5 ? 'evo-n' : (pct > 0 ? 'evo-g' : 'evo-r');
+  if (lowerIsBetter) cl = Math.abs(pct) < 5 ? 'evo-n' : (pct < 0 ? 'evo-g' : 'evo-r');
+  var arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : '→';
+  var sign = pct > 0 ? '+' : '';
+  return '<span class="evo ' + cl + '">' + arrow + ' ' + sign + pct.toFixed(1) + '%</span>';
+}
+
+function renderKPIs(){
+  var d = getYear(currentYear);
+  // Trouver l'annee precedente disponible
+  var idx = L.years.indexOf(currentYear);
+  var prev = idx > 0 ? getYear(L.years[idx - 1]) : null;
+
+  var prevYear = idx > 0 ? L.years[idx - 1] : null;
+  var subPrev = function(label, val){
+    return prev ? ('<br><span style="color:var(--tx2);font-size:10px">vs ' + prevYear + ' : ' + val + '</span>') : '';
+  };
+
+  document.getElementById('kpiStrip').innerHTML = ''
+    + kpiCard('Moyenne',         d.avg,         'j', '#44937d', 'Jours moyens entre réservation et arrivée' + (prev ? subPrev('Moyenne', prev.avg + ' j') : ''), prev ? evoVs(prev.avg, d.avg, false) : '')
+    + kpiCard('Médiane',         d.median,      'j', '#2d6a9f', '50% réservent avant ce délai, 50% après' + (prev ? subPrev('Médiane', prev.median + ' j') : ''), prev ? evoVs(prev.median, d.median, false) : '')
+    + kpiCard('Last minute',     d.pctLastMin30,'%', '#e8723a', 'Réservations à ≤ 30 jours de l\'arrivée' + (prev ? subPrev('Last min ≤30j', prev.pctLastMin30 + ' %') : ''), prev ? evoVs(prev.pctLastMin30, d.pctLastMin30, false) : '')
+    + kpiCard('Planifiées',      d.pctPlanned90,'%', '#a259c7', 'Réservations à > 90 jours de l\'arrivée' + (prev ? subPrev('Planifié >90j', prev.pctPlanned90 + ' %') : ''), prev ? evoVs(prev.pctPlanned90, d.pctPlanned90, false) : '');
+}
+
+function kpiCard(lbl, val, unit, color, sub, evo){
+  return '<div class="kpi" style="--kc:' + color + '">'
+    + '<div class="lbl">' + lbl + '</div>'
+    + '<div class="val">' + fmt(val) + '<span class="unit">' + unit + '</span></div>'
+    + (evo ? evo : '')
+    + '<div class="sub">' + sub + '</div>'
+    + '</div>';
+}
+
+function renderInsights(){
+  var d = getYear(currentYear);
+  var items = [];
+
+  // Insight 1 : moyenne en jours
+  items.push({
+    icon: '⏱️',
+    txt: '<b>' + d.avg + ' jours en moyenne</b> entre la réservation et l\'arrivée. La médiane est à <b>' + d.median + ' jours</b>.'
+  });
+
+  // Insight 2 : last minute
+  items.push({
+    icon: '⚡',
+    txt: '<b>' + d.pctLastMin30 + '% des réservations</b> sont prises dans les 30 jours avant l\'arrivée. ' + d.pctLastMin7 + '% dans les 7 jours.'
+  });
+
+  // Insight 3 : segment qui anticipe le plus
+  var segs = [
+    { k: 'J', n: 'Juniors', v: d.bySeg.J },
+    { k: 'A', n: 'Adultes', v: d.bySeg.A },
+    { k: 'G', n: 'Groupes', v: d.bySeg.G }
+  ].filter(function(s){ return s.v.count > 0; });
+  segs.sort(function(a,b){ return b.v.avg - a.v.avg; });
+  if (segs.length >= 2) {
+    items.push({
+      icon: '🎯',
+      txt: 'Les <b>' + segs[0].n + '</b> anticipent le plus (<b>' + segs[0].v.avg + ' j</b> en moyenne), les <b>' + segs[segs.length-1].n + '</b> le moins (<b>' + segs[segs.length-1].v.avg + ' j</b>).'
+    });
+  }
+
+  // Insight 4 : top pays anticipateur
+  if (d.topCountries && d.topCountries.length > 0) {
+    var sorted = d.topCountries.slice().sort(function(a,b){ return b.avg - a.avg; });
+    var most = sorted[0], least = sorted[sorted.length - 1];
+    items.push({
+      icon: '🌍',
+      txt: '<b>' + capWord(most.n) + '</b> anticipe le plus (<b>' + most.avg + ' j</b> en moyenne sur ' + fmt(most.count) + ' résa). <b>' + capWord(least.n) + '</b> le moins (' + least.avg + ' j).'
+    });
+  }
+
+  document.getElementById('insights').innerHTML = items.map(function(i){
+    return '<div class="insight"><span class="icon">' + i.icon + '</span><div class="txt">' + i.txt + '</div></div>';
+  }).join('');
+}
+
+function capWord(s){
+  if (!s) return '';
+  return s.toLowerCase().split(' ').map(function(w){
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(' ');
+}
+
+function chartColors(){
+  var css = getComputedStyle(document.body);
+  return {
+    tx: css.getPropertyValue('--tx2').trim() || '#6b8299',
+    grid: (document.body.dataset.theme === 'light') ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.06)'
+  };
+}
+
+function renderDistribution(){
+  var d = getYear(currentYear);
+  var labels = L.bucketLabels.map(function(b){ return b.label; });
+  var data = L.bucketLabels.map(function(b){ return d.dist[b.key] || 0; });
+  var colors = ['#e8723a','#e8723a','#e8c93a','#44937d','#44937d','#2d6a9f','#a259c7'];
+  var c = chartColors();
+
+  if (chDist) chDist.destroy();
+  chDist = new Chart(document.getElementById('chDist'), {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderRadius: 6 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ var tot = data.reduce(function(a,b){return a+b;},0); var pct = tot > 0 ? (ctx.parsed.y / tot * 100).toFixed(1) : 0; return fmt(ctx.parsed.y) + ' réservations (' + pct + '%)'; } } }
+      },
+      scales: {
+        x: { ticks: { color: c.tx, font: { size: 10 } }, grid: { color: c.grid } },
+        y: { ticks: { color: c.tx }, grid: { color: c.grid }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function renderSegments(){
+  var d = getYear(currentYear);
+  var segs = [
+    { label: 'Juniors', v: d.bySeg.J, color: '#2d6a9f' },
+    { label: 'Adultes', v: d.bySeg.A, color: '#e8723a' },
+    { label: 'Groupes', v: d.bySeg.G, color: '#44937d' }
+  ];
+  var labels = segs.map(function(s){ return s.label + '  (n=' + fmt(s.v.count) + ')'; });
+  var data = segs.map(function(s){ return s.v.avg; });
+  var medians = segs.map(function(s){ return s.v.median; });
+  var c = chartColors();
+
+  if (chSeg) chSeg.destroy();
+  chSeg = new Chart(document.getElementById('chSeg'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Moyenne', data: data, backgroundColor: segs.map(function(s){return s.color;}), borderRadius: 6 },
+        { label: 'Médiane', data: medians, backgroundColor: segs.map(function(s){return s.color+'66';}), borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: c.tx, font: { size: 11 } } },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ' : ' + ctx.parsed.y + ' j'; } } }
+      },
+      scales: {
+        x: { ticks: { color: c.tx, font: { size: 10 } }, grid: { color: c.grid } },
+        y: { ticks: { color: c.tx, callback: function(v){return v+' j';} }, grid: { color: c.grid }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function renderMonthly(){
+  var d = getYear(currentYear);
+  var monthsLabels = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  var avgs = []; var medians = []; var counts = [];
+  for (var m = 1; m <= 12; m++) {
+    var v = d.byMonth[String(m)];
+    avgs.push(v && v.count > 0 ? v.avg : null);
+    medians.push(v && v.count > 0 ? v.median : null);
+    counts.push(v ? v.count : 0);
+  }
+  var c = chartColors();
+
+  if (chMonth) chMonth.destroy();
+  chMonth = new Chart(document.getElementById('chMonth'), {
+    type: 'bar',
+    data: {
+      labels: monthsLabels,
+      datasets: [
+        { label: 'Lead time moyen (j)', data: avgs, backgroundColor: '#2d6a9f', borderRadius: 6, yAxisID: 'y' },
+        { label: 'Médiane (j)', data: medians, type: 'line', borderColor: '#e8c93a', backgroundColor: '#e8c93a', borderWidth: 2, tension: 0.3, pointRadius: 4, yAxisID: 'y' },
+        { label: 'Nb réservations', data: counts, type: 'line', borderColor: '#44937d', backgroundColor: 'rgba(68,147,125,0.1)', borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: c.tx, font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: c.tx }, grid: { color: c.grid } },
+        y: { position: 'left', ticks: { color: c.tx, callback: function(v){return v+' j';} }, grid: { color: c.grid }, beginAtZero: true, title: { display: true, text: 'Lead time (j)', color: c.tx } },
+        y1: { position: 'right', ticks: { color: c.tx, callback: function(v){return fmt(v);} }, grid: { display: false }, beginAtZero: true, title: { display: true, text: 'Nb résa', color: c.tx } }
+      }
+    }
+  });
+}
+
+function renderYearTable(){
+  var rows = YEARS.map(function(y){
+    var d = getYear(y);
+    var active = y === currentYear ? ' style="background:rgba(45,106,159,.12)"' : '';
+    return '<tr' + active + '>'
+      + '<td><b>' + y + '</b></td>'
+      + '<td>' + fmt(d.count) + '</td>'
+      + '<td>' + d.avg + ' j</td>'
+      + '<td>' + d.median + ' j</td>'
+      + '<td>' + d.p25 + ' j</td>'
+      + '<td>' + d.p75 + ' j</td>'
+      + '<td>' + d.pctLastMin7 + ' %</td>'
+      + '<td>' + d.pctLastMin30 + ' %</td>'
+      + '<td>' + d.pctPlanned90 + ' %</td>'
+      + '</tr>';
+  });
+  document.getElementById('yearTbl').innerHTML = rows.join('');
+}
+
+function renderCountryTable(){
+  var d = getYear(currentYear);
+  var rows = (d.topCountries || []).map(function(c){
+    return '<tr>'
+      + '<td>' + capWord(c.n) + '</td>'
+      + '<td>' + fmt(c.count) + '</td>'
+      + '<td>' + c.avg + ' j</td>'
+      + '<td>' + c.median + ' j</td>'
+      + '</tr>';
+  });
+  document.getElementById('countryTbl').innerHTML = rows.join('');
+}
+
+function renderAll(){
+  document.querySelectorAll('.y-tab').forEach(function(b){
+    b.classList.toggle('active', parseInt(b.dataset.y,10) === currentYear);
+  });
+  renderNotice();
+  renderKPIs();
+  renderInsights();
+  renderDistribution();
+  renderSegments();
+  renderMonthly();
+  renderYearTable();
+  renderCountryTable();
+}
+
+function init(){
+  renderTabs();
+  renderAll();
+
+  var tBtn = document.querySelector('.theme-toggle');
+  if (tBtn) tBtn.addEventListener('click', function(){
+    setTimeout(function(){ renderDistribution(); renderSegments(); renderMonthly(); }, 60);
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
