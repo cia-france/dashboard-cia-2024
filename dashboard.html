@@ -5,6 +5,7 @@
 <title>CIA — Dashboard Annuel</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="data.js"></script>
+<script src="compute.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="mobile-menu.css">
@@ -76,6 +77,30 @@ tr:hover td{background:rgba(45,106,159,.05)}
 .insight b{color:#e8edf2}
 .prog-card{background:var(--bg3);border-radius:9px;padding:12px 16px;border:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 @media(max-width:800px){.sidebar{display:none}.main{margin-left:0}.g2,.g3{grid-template-columns:1fr}.content{padding:16px}}
+/* Barre période */
+.period-bar{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:14px 18px;margin-bottom:18px}
+.period-bar .mode-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mode-toggle{display:inline-flex;gap:6px;padding:4px;background:var(--bg);border:1px solid var(--bd);border-radius:8px}
+.mode-btn{padding:6px 14px;border:none;background:transparent;color:var(--tx3);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border-radius:6px;transition:.15s}
+.mode-btn:hover{color:#e8edf2}
+.mode-btn.active{background:var(--ac);color:#fff}
+.period-info{font-size:12px;color:var(--tx3);font-family:'Space Mono',monospace}
+.period-info b{color:#e8edf2}
+.period-controls{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--bd);gap:14px;flex-wrap:wrap;align-items:flex-end}
+.period-controls.show{display:flex}
+.date-grp{display:flex;flex-direction:column;gap:4px}
+.date-grp label{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.date-grp input{padding:8px 10px;background:var(--bg);border:1px solid var(--bd);color:#e8edf2;border-radius:6px;font-size:12px;font-family:'Space Mono',monospace}
+.date-grp input:focus{outline:none;border-color:var(--ac)}
+.preset-row{display:flex;gap:6px;flex-wrap:wrap}
+.preset-btn{padding:6px 10px;border:1px solid var(--bd);background:transparent;color:var(--tx3);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
+.preset-btn:hover{background:var(--bg3);color:#e8edf2;border-color:var(--bd2)}
+.apply-btn{padding:8px 16px;background:var(--ac);border:none;color:#fff;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
+.apply-btn:hover{background:#1a4f7f}
+.apply-btn:disabled{opacity:.5;cursor:not-allowed}
+.loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--tx2);border-top-color:#e8edf2;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.period-loading{font-size:12px;color:var(--tx3);margin-top:10px}
 </style>
 </head>
 <body>
@@ -129,6 +154,35 @@ tr:hover td{background:rgba(45,106,159,.05)}
   </div>
 
   <div class="content">
+    <!-- Barre période -->
+    <div class="period-bar">
+      <div class="mode-row">
+        <div class="mode-toggle">
+          <button class="mode-btn active" data-mode="year" type="button">Année</button>
+          <button class="mode-btn" data-mode="custom" type="button">Période personnalisée</button>
+        </div>
+        <div class="period-info" id="periodInfo"></div>
+      </div>
+      <div class="period-controls" id="periodControls">
+        <div class="date-grp">
+          <label for="dateFrom">Du</label>
+          <input type="date" id="dateFrom">
+        </div>
+        <div class="date-grp">
+          <label for="dateTo">Au</label>
+          <input type="date" id="dateTo">
+        </div>
+        <div class="date-grp">
+          <label>Raccourcis</label>
+          <div class="preset-row" id="presetRow"></div>
+        </div>
+        <button class="apply-btn" id="applyBtn" type="button">Appliquer</button>
+        <div class="period-loading" id="periodLoading" style="display:none">
+          <span class="loading-spinner"></span>Chargement des données détaillées…
+        </div>
+      </div>
+    </div>
+
     <!-- KPI -->
     <div class="kpi-grid" id="kpiGrid"></div>
 
@@ -197,7 +251,9 @@ const params=new URLSearchParams(location.search);
 let curYear=params.get('annee')||anneesDisponibles()[0];
 if(!CIA_DATA[curYear]) curYear=anneesDisponibles()[0];
 
-function D(){return CIA_DATA[curYear];}
+// Mode periode : si customData est defini, il prend le pas sur l'annee
+let customData = null;
+function D(){ return customData || CIA_DATA[curYear]; }
 
 // Year selector
 function buildYearSel(){
@@ -211,8 +267,9 @@ function buildYearSel(){
 function buildKPI(){
   const d=D();
   const prevY=String(+curYear-1);
-  const prev=CIA_DATA[prevY];
-  document.getElementById('tbTitle').textContent='Dashboard CIA '+curYear;
+  // En mode periode libre, pas de comparaison vs N-1 (pas de sens)
+  const prev = customData ? null : CIA_DATA[prevY];
+  document.getElementById('tbTitle').textContent = customData ? customData.meta.label : ('Dashboard CIA '+curYear);
   const kpis=[
     {lbl:'CA Total TTC',val:fmtK(d.kpi.caTotalTTC),raw:d.kpi.caTotalTTC,prevRaw:prev?.kpi.caTotalTTC,kc:'#44937d'},
     {lbl:'Stagiaires',val:fmt(d.kpi.stagiaires),raw:d.kpi.stagiaires,prevRaw:prev?.kpi.stagiaires,kc:'#2d6a9f'},
@@ -297,9 +354,127 @@ function renderTab(i){
   }
 }
 
+// =============================================================================
+// MODE PERIODE LIBRE
+// =============================================================================
+function fmtDateFR(ymd){
+  if (!ymd) return '';
+  var p = ymd.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function updatePeriodInfo(){
+  var el = document.getElementById('periodInfo');
+  if (customData) {
+    el.innerHTML = '<b>' + customData.meta.label + '</b> · ' + fmt(customData.kpi.stagiaires) + ' réservations';
+  } else {
+    el.innerHTML = 'Année <b>' + curYear + '</b>';
+  }
+}
+
+function setMode(mode){
+  document.querySelectorAll('.mode-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  var controls = document.getElementById('periodControls');
+  if (mode === 'custom') {
+    controls.classList.add('show');
+    // Lazy-load rows.js au premier passage
+    document.getElementById('periodLoading').style.display = 'block';
+    loadRows().then(function(){
+      document.getElementById('periodLoading').style.display = 'none';
+    }).catch(function(e){
+      document.getElementById('periodLoading').innerHTML = '<span style="color:var(--rd)">Erreur : ' + e.message + '</span>';
+    });
+  } else {
+    controls.classList.remove('show');
+    if (customData) {
+      customData = null;
+      document.getElementById('tbTitle').textContent = 'Dashboard CIA ' + curYear;
+      buildKPI(); switchTab(curTab);
+      updatePeriodInfo();
+    }
+  }
+}
+
+function applyCustomRange(fromYMD, toYMD, label){
+  if (typeof CIA_ROWS === 'undefined') {
+    alert('Données pas encore chargées. Patiente une seconde et réessaie.');
+    return;
+  }
+  if (!fromYMD || !toYMD) { alert('Sélectionne une date de début et de fin'); return; }
+  if (fromYMD > toYMD) { alert('La date de fin doit être après la date de début'); return; }
+
+  var result = aggregateRange(fromYMD, toYMD, label);
+  if (!result) {
+    alert('Aucune réservation trouvée sur cette période');
+    return;
+  }
+  customData = result;
+  document.getElementById('tbTitle').textContent = customData.meta.label;
+  buildKPI(); switchTab(curTab);
+  updatePeriodInfo();
+}
+
+// Presets : permet de remplir les dates rapidement
+function setupPresets(){
+  var todayStr = new Date().toISOString().slice(0, 10);
+  var yYear = parseInt(todayStr.slice(0, 4), 10);
+
+  var presets = [
+    { label: 'Ce mois', from: todayStr.slice(0, 8) + '01', to: todayStr },
+    { label: '30 derniers j', from: shiftDays(todayStr, -30), to: todayStr },
+    { label: '90 derniers j', from: shiftDays(todayStr, -90), to: todayStr },
+    { label: 'YTD ' + yYear, from: yYear + '-01-01', to: todayStr },
+    { label: 'T1 ' + yYear, from: yYear + '-01-01', to: yYear + '-03-31' },
+    { label: 'T2 ' + yYear, from: yYear + '-04-01', to: yYear + '-06-30' },
+    { label: 'T3 ' + yYear, from: yYear + '-07-01', to: yYear + '-09-30' },
+    { label: 'T4 ' + yYear, from: yYear + '-10-01', to: yYear + '-12-31' },
+    { label: 'Été ' + yYear, from: yYear + '-07-01', to: yYear + '-08-31' },
+    { label: 'Pâques ' + yYear, from: yYear + '-04-01', to: yYear + '-04-30' },
+    { label: 'Toussaint ' + yYear, from: yYear + '-10-15', to: yYear + '-11-15' }
+  ];
+  document.getElementById('presetRow').innerHTML = presets.map(function(p, i){
+    return '<button class="preset-btn" type="button" data-i="' + i + '">' + p.label + '</button>';
+  }).join('');
+  document.querySelectorAll('.preset-btn').forEach(function(b){
+    b.addEventListener('click', function(){
+      var p = presets[+b.dataset.i];
+      document.getElementById('dateFrom').value = p.from;
+      document.getElementById('dateTo').value = p.to;
+      applyCustomRange(p.from, p.to, p.label);
+    });
+  });
+}
+
+function shiftDays(ymd, n){
+  var d = new Date(ymd);
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+// Pre-remplir les dates avec le mois en cours
+(function initDates(){
+  var todayStr = new Date().toISOString().slice(0, 10);
+  document.getElementById('dateFrom').value = todayStr.slice(0, 8) + '01';
+  document.getElementById('dateTo').value = todayStr;
+})();
+
+// Wiring
+document.querySelectorAll('.mode-btn').forEach(function(b){
+  b.addEventListener('click', function(){ setMode(b.dataset.mode); });
+});
+document.getElementById('applyBtn').addEventListener('click', function(){
+  var f = document.getElementById('dateFrom').value;
+  var t = document.getElementById('dateTo').value;
+  applyCustomRange(f, t, fmtDateFR(f) + ' → ' + fmtDateFR(t));
+});
+setupPresets();
+
 buildYearSel();buildKPI();buildTabs();
 const urlTab=parseInt(params.get('tab')||'0');
 switchTab(urlTab);
+updatePeriodInfo();
 </script>
 </body>
 </html>
