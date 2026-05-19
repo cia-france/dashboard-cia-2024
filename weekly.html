@@ -548,9 +548,30 @@ function bindControls(){
   });
 }
 
-// Determiner la semaine par defaut : la derniere semaine de l'annee courante
-// avec au moins 5 bookings (pour eviter les fins d'annee vides)
+// Calcul de la semaine ISO actuelle (today)
+function todaysIsoWeek(){
+  var now = new Date();
+  var d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  // Jeudi de la semaine ISO = ref pour le calcul
+  var day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  var w = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return { y: d.getUTCFullYear(), w: w };
+}
+
+// Defaut : la semaine ISO d'aujourd'hui pour l'annee courante si disponible,
+// sinon la derniere semaine de l'annee avec au moins 5 reservations
 function defaultWeek(){
+  var today = todaysIsoWeek();
+  if (today.y === currentYear) {
+    var d = getWeek(currentYear, today.w);
+    if (d) return today.w;
+    // Fallback : la semaine la plus proche en arriere avec des donnees
+    for (var w = today.w; w >= 1; w--) {
+      if (getWeek(currentYear, w)) return w;
+    }
+  }
   var r = yearRange(currentYear);
   for (var w = r.max; w >= r.min; w--) {
     var d = getWeek(currentYear, w);
