@@ -29,10 +29,19 @@
       btn.type = 'button';
       btn.setAttribute('aria-label','Ouvrir le menu');
       btn.innerHTML = ICON_OPEN;
-      // L'inserer dans le 1er bloc du topbar, tout au debut
+      // L'inserer dans le 1er bloc du topbar.
+      // On wrap les enfants existants pour qu'ils restent empiles verticalement
+      // une fois que le bloc parent passe en flex (sur mobile).
       var leftBlock = topbar.firstElementChild;
-      if (leftBlock) leftBlock.insertBefore(btn, leftBlock.firstChild);
-      else topbar.insertBefore(btn, topbar.firstChild);
+      if (leftBlock) {
+        var titleWrap = document.createElement('div');
+        titleWrap.className = 'topbar-title-wrap';
+        while (leftBlock.firstChild) titleWrap.appendChild(leftBlock.firstChild);
+        leftBlock.appendChild(titleWrap);
+        leftBlock.insertBefore(btn, titleWrap);
+      } else {
+        topbar.insertBefore(btn, topbar.firstChild);
+      }
     }
 
     // 2) Backdrop

@@ -63,8 +63,10 @@ body.menu-open{overflow:hidden}
   .topbar-meta,.tb-meta{font-size:10px !important}
 
   /* Pour aligner le hamburger avec le titre dans le bloc de gauche du topbar */
-  .topbar > div:first-child{display:flex;align-items:center;min-width:0}
-  .topbar > div:first-child > div:not(.menu-toggle){min-width:0}
+  .topbar > div:first-child{display:flex;align-items:center;min-width:0;gap:0}
+  /* Le wrapper auto-cree contient le titre + sous-titre empiles verticalement */
+  .topbar-title-wrap{display:block;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topbar-title-wrap > *{white-space:normal}
 
   /* Le bloc droit du topbar : meta ID peut etre masque pour gagner de la place */
   .topbar-right .tb-meta:not(.theme-toggle),
