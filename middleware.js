@@ -35,7 +35,8 @@ async function verifyToken(token, secret) {
     const payloadStr = TD.decode(b64urlToBytes(parts[0]));
     const sig = b64urlToBytes(parts[1]);
     const payload = JSON.parse(payloadStr);
-    if (!payload || !payload.email || !payload.exp) return null;
+    // Compat : champ 'u' (nouvelle version) ou 'email' (ancienne)
+    if (!payload || (!payload.u && !payload.email) || !payload.exp) return null;
     if (payload.exp < Date.now()) return null;
 
     const key = await crypto.subtle.importKey(

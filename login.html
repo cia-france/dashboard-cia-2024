@@ -117,8 +117,9 @@ input:focus{
 
   <form id="loginForm" autocomplete="on">
     <div class="grp">
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" autocomplete="username" required autofocus>
+      <label for="username">Identifiant</label>
+      <input type="text" id="username" name="username" autocomplete="username"
+             required autofocus autocapitalize="off" spellcheck="false">
     </div>
     <div class="grp">
       <label for="password">Mot de passe</label>
@@ -158,7 +159,7 @@ input:focus{
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          email: document.getElementById('email').value,
+          username: document.getElementById('username').value,
           password: document.getElementById('password').value,
           next: next
         })

@@ -5,10 +5,14 @@
 // ENV VARS REQUISES dans Vercel :
 //   AUTH_SECRET : chaine aleatoire de 32+ caracteres (signature HMAC)
 //   AUTH_USERS  : liste des comptes au format
-//                 "email1:password1,email2:password2,email3:password3"
+//                 "identifiant1:password1,identifiant2:password2"
+//
+// L'identifiant est insensible a la casse (stocke en lowercase).
+// Le mot de passe est sensible a la casse, peut contenir des ':' mais
+// PAS de virgule (les virgules separent les utilisateurs).
 //
 // Exemple :
-//   AUTH_USERS = "patron@cia-france.com:MotDePasse2026!,assistant@cia-france.com:Autre2026!"
+//   AUTH_USERS = "direction:CIAdirection2026!,admin:CIAadmin2026!,assistant:CIAassistant2026!"
 
 export const config = { runtime: 'edge' };
 
@@ -38,7 +42,7 @@ function parseUsers(str) {
     const idx = part.indexOf(':');
     if (idx === -1) return null;
     return {
-      email: part.slice(0, idx).trim().toLowerCase(),
+      id: part.slice(0, idx).trim().toLowerCase(),
       password: part.slice(idx + 1).trim()
     };
   }).filter(Boolean);
@@ -58,17 +62,18 @@ export default async function handler(request) {
   }
 
   const ct = request.headers.get('content-type') || '';
-  let email = '', password = '', next = '/';
+  let username = '', password = '', next = '/';
 
   try {
     if (ct.includes('application/json')) {
       const body = await request.json();
-      email = String(body.email || '').toLowerCase().trim();
+      // Accepte les anciens noms de champ par compatibilite (username, email, id)
+      username = String(body.username || body.email || body.id || '').toLowerCase().trim();
       password = String(body.password || '');
       next = String(body.next || '/');
     } else {
       const form = await request.formData();
-      email = String(form.get('email') || '').toLowerCase().trim();
+      username = String(form.get('username') || form.get('email') || form.get('id') || '').toLowerCase().trim();
       password = String(form.get('password') || '');
       next = String(form.get('next') || '/');
     }
@@ -82,10 +87,10 @@ export default async function handler(request) {
   if (!isSafeRedirectPath(next)) next = '/';
 
   const users = parseUsers(process.env.AUTH_USERS || '');
-  const user = users.find(u => u.email === email && u.password === password);
+  const user = users.find(u => u.id === username && u.password === password);
 
   if (!user) {
-    return new Response(JSON.stringify({ ok: false, error: 'Email ou mot de passe incorrect' }), {
+    return new Response(JSON.stringify({ ok: false, error: 'Identifiant ou mot de passe incorrect' }), {
       status: 401,
       headers: { 'content-type': 'application/json' }
     });
@@ -101,7 +106,7 @@ export default async function handler(request) {
 
   // Token valable 30 jours
   const exp = Date.now() + 30 * 24 * 3600 * 1000;
-  const token = await signPayload({ email: user.email, exp }, secret);
+  const token = await signPayload({ u: user.id, exp }, secret);
 
   const maxAgeSec = 30 * 24 * 3600;
   const cookie = [
