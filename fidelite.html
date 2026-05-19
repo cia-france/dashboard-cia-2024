@@ -102,6 +102,19 @@ td.rank{font-family:'Space Mono',monospace;color:var(--tx2);width:38px}
     <a class="s-item" href="dashboard.html"><span>📊</span> Dashboard annuel</a>
     <a class="s-item" href="comparaison.html"><span>⚖️</span> Comparaison</a>
     <a class="s-item active" href="#"><span>💚</span> Fidélité</a>
+    <div class="s-sec">Années</div>
+    <div id="yearLinks"></div>
+    <script>
+      (function(){
+        var el = document.getElementById('yearLinks');
+        if (!el || typeof CIA_DATA === 'undefined') return;
+        var ys = Object.keys(CIA_DATA).sort(function(a,b){ return b - a; });
+        el.innerHTML = ys.map(function(y){
+          return '<a class="s-item" href="dashboard.html?annee=' + y + '">'
+               + '<span>📅</span> ' + y + '</a>';
+        }).join('');
+      })();
+    </script>
     <div class="s-sec">Vues</div>
     <a class="s-item" href="#kpis"><span>📈</span> KPIs</a>
     <a class="s-item" href="#flux"><span>🔀</span> Flux annuels</a>

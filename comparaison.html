@@ -90,8 +90,18 @@ td.neutral-c{color:var(--ac)}
     <a class="s-item active" href="comparaison.html"><span>⚖️</span> Comparaison</a>
     <a class="s-item" href="fidelite.html"><span>💚</span> Fidélité</a>
     <div class="s-sec">Années</div>
-    <a class="s-item" href="dashboard.html?annee=2024"><span>📅</span> 2024</a>
-    <a class="s-item" href="dashboard.html?annee=2023"><span>📅</span> 2023</a>
+    <div id="yearLinks"></div>
+    <script>
+      (function(){
+        var el = document.getElementById('yearLinks');
+        if (!el || typeof CIA_DATA === 'undefined') return;
+        var ys = Object.keys(CIA_DATA).sort(function(a,b){ return b - a; });
+        el.innerHTML = ys.map(function(y){
+          return '<a class="s-item" href="dashboard.html?annee=' + y + '">'
+               + '<span>📅</span> ' + y + '</a>';
+        }).join('');
+      })();
+    </script>
   </nav>
   <div class="s-foot"><span class="dot"></span>Accès réservé<br>v2.0 — Mai 2026</div>
 </aside>

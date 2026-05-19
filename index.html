@@ -360,12 +360,18 @@ canvas{max-height:200px;}
     </a>
 
     <div class="nav-section" style="margin-top:12px">Années disponibles</div>
-    <a class="nav-item" href="dashboard.html?annee=2024">
-      <span class="icon">📅</span> 2024
-    </a>
-    <a class="nav-item" href="dashboard.html?annee=2023">
-      <span class="icon">📅</span> 2023
-    </a>
+    <div id="yearLinks"></div>
+    <script>
+      (function(){
+        var el = document.getElementById('yearLinks');
+        if (!el || typeof CIA_DATA === 'undefined') return;
+        var ys = Object.keys(CIA_DATA).sort(function(a,b){ return b - a; });
+        el.innerHTML = ys.map(function(y){
+          return '<a class="nav-item" href="dashboard.html?annee=' + y + '">'
+               + '<span class="icon">📅</span> ' + y + '</a>';
+        }).join('');
+      })();
+    </script>
 
     <div class="nav-section" style="margin-top:12px">Vues détaillées</div>
     <a class="nav-item" href="dashboard.html?annee=2024&tab=2">

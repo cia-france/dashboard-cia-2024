@@ -86,8 +86,21 @@ tr:hover td{background:rgba(45,106,159,.05)}
     <a class="s-item" href="comparaison.html"><span>⚖️</span> Comparaison</a>
     <a class="s-item" href="fidelite.html"><span>💚</span> Fidélité</a>
     <div class="s-sec">Années</div>
-    <a class="s-item" href="dashboard.html?annee=2024" id="nav2024"><span>📅</span> 2024</a>
-    <a class="s-item" href="dashboard.html?annee=2023" id="nav2023"><span>📅</span> 2023</a>
+    <div id="yearLinks"></div>
+    <script>
+      (function(){
+        var el = document.getElementById('yearLinks');
+        if (!el || typeof CIA_DATA === 'undefined') return;
+        var ys = Object.keys(CIA_DATA).sort(function(a,b){ return b - a; });
+        var url = new URLSearchParams(location.search);
+        var current = parseInt(url.get('annee'), 10);
+        el.innerHTML = ys.map(function(y){
+          var active = (parseInt(y,10) === current) ? ' active' : '';
+          return '<a class="s-item' + active + '" href="dashboard.html?annee=' + y + '">'
+               + '<span>📅</span> ' + y + '</a>';
+        }).join('');
+      })();
+    </script>
     <div class="s-sec">Vues</div>
     <a class="s-item" href="#" onclick="switchTab(2);return false"><span>🌍</span> Analyse pays</a>
     <a class="s-item" href="#" onclick="switchTab(3);return false"><span>🎓</span> Programmes</a>
