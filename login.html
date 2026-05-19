@@ -84,6 +84,13 @@ input:focus{
   color:var(--gr);padding:10px 14px;border-radius:8px;font-size:12px;
   margin-bottom:14px;
 }
+.warning-box{
+  background:rgba(232,114,58,.07);border:1px solid rgba(232,114,58,.25);
+  color:var(--tx3);padding:11px 14px;border-radius:8px;font-size:12px;
+  margin-bottom:14px;line-height:1.5;display:flex;gap:10px;align-items:flex-start;
+}
+.warning-box b{color:#e8edf2;font-weight:600}
+.warning-icon{font-size:18px;flex-shrink:0;line-height:1}
 .foot{
   margin-top:22px;padding-top:18px;border-top:1px solid var(--bd);
   font-size:11px;color:var(--tx2);font-family:'Space Mono',monospace;
@@ -112,6 +119,13 @@ input:focus{
 
   <div class="notice" id="logoutNotice" style="display:none">
     Vous avez été déconnecté. À bientôt !
+  </div>
+  <div class="warning-box">
+    <span class="warning-icon">🔒</span>
+    <div>
+      <b>Ne partagez pas cette URL par email ou messagerie.</b><br>
+      Transmettez plutôt l'identifiant et le mot de passe à la personne concernée ; chacun se connecte de son côté.
+    </div>
   </div>
   <div class="err" id="errBox"></div>
 
