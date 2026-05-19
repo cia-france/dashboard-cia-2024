@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIA — Suivi hebdomadaire</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<script src="weekly.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="mobile-menu.css">
+<script src="theme.js" defer></script>
+<script src="mobile-menu.js" defer></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070c14;--bg2:#0b1220;--bg3:#0f1a2e;--bd:#1a2e48;--bd2:#243d5e;--tx:#c8d8e8;--tx2:#6b8299;--tx3:#8faab8;--ac:#2d6a9f;--gr:#2ecc71;--rd:#e74c3c;--or:#e8723a;--pp:#a259c7}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;min-height:100vh}
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:100}
+.s-logo{padding:24px 20px;border-bottom:1px solid var(--bd)}
+.s-badge{font-size:24px;font-weight:800;background:linear-gradient(135deg,#2d6a9f,#44937d);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.s-sub{font-size:9px;color:var(--tx2);letter-spacing:2px;text-transform:uppercase;margin-top:2px;font-family:'Space Mono',monospace}
+.s-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.s-sec{font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;padding:10px 10px 4px}
+.s-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;color:var(--tx3);font-size:12px;font-weight:500;text-decoration:none;transition:.15s}
+.s-item:hover{background:var(--bg3);color:#e8edf2}
+.s-item.active{background:linear-gradient(90deg,#1a3c5e,transparent);color:#e8edf2;border-left:3px solid var(--ac);padding-left:7px}
+.s-foot{padding:12px 16px;border-top:1px solid var(--bd);font-size:10px;color:var(--tx2);font-family:'Space Mono',monospace}
+.dot{display:inline-block;width:7px;height:7px;background:var(--gr);border-radius:50%;margin-right:5px;box-shadow:0 0 6px var(--gr);animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+
+.main{margin-left:220px;min-height:100vh}
+.topbar{background:rgba(11,18,32,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-title{font-size:16px;font-weight:700;color:#e8edf2}
+.tb-meta{font-size:11px;color:var(--tx2);font-family:'Space Mono',monospace}
+.topbar-right{display:flex;align-items:center;gap:0}
+
+.content{padding:28px}
+
+/* Selecteur de periode */
+.period-bar{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:18px 22px;margin-bottom:26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.period-info{flex:1;min-width:240px}
+.period-info .lbl{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-weight:600}
+.period-info .val{font-size:22px;font-weight:800;color:#e8edf2;line-height:1.1}
+.period-info .dates{font-size:12px;color:var(--tx3);margin-top:4px;font-family:'Space Mono',monospace}
+
+.period-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.year-pills{display:flex;gap:6px}
+.y-pill{padding:7px 14px;border:1px solid var(--bd);background:transparent;color:var(--tx3);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Mono',monospace;transition:.15s}
+.y-pill:hover{background:var(--bg3);color:#e8edf2}
+.y-pill.active{background:var(--ac);color:#fff;border-color:var(--ac)}
+
+.week-control{display:flex;align-items:center;gap:8px}
+.wk-btn{width:32px;height:32px;border:1px solid var(--bd);background:transparent;color:var(--tx3);border-radius:7px;cursor:pointer;font-size:16px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+.wk-btn:hover:not(:disabled){background:var(--bg3);color:#e8edf2;border-color:var(--bd2)}
+.wk-btn:disabled{opacity:.3;cursor:not-allowed}
+.wk-input{width:78px;padding:7px 10px;background:var(--bg);border:1px solid var(--bd);color:#e8edf2;border-radius:7px;font-size:13px;font-weight:700;font-family:'Space Mono',monospace;text-align:center}
+.wk-slider{width:200px;accent-color:var(--ac)}
+@media(max-width:900px){.wk-slider{width:140px}}
+
+/* KPI cards */
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:26px}
+.kpi{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{transform:translateY(-2px);border-color:var(--bd2)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kc,var(--ac));opacity:.85}
+.kpi .lbl{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;font-weight:600}
+.kpi .val{font-size:26px;font-weight:800;color:#e8edf2;line-height:1;margin-bottom:10px}
+.kpi .evos{display:flex;flex-direction:column;gap:4px}
+.kpi .evo-row{display:flex;align-items:center;gap:8px;font-size:11px}
+.kpi .evo-row .yr{font-family:'Space Mono',monospace;color:var(--tx2);width:46px}
+.kpi .evo-row .pct{font-weight:700;padding:1px 8px;border-radius:10px;font-size:10px;font-family:'Space Mono',monospace}
+.evo-g{background:rgba(46,204,113,.15);color:var(--gr)}
+.evo-r{background:rgba(231,76,60,.15);color:var(--rd)}
+.evo-n{background:rgba(107,130,153,.18);color:var(--tx3)}
+.evo-dim{color:var(--tx2);font-style:italic;font-size:10px}
+
+/* Sections */
+.section{margin-bottom:30px}
+.section-title{font-size:12px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.section-title::before{content:'';width:3px;height:13px;background:var(--ac);border-radius:2px}
+.section-desc{font-size:12px;color:var(--tx2);margin-bottom:14px;margin-top:-8px;line-height:1.6}
+
+/* Pace tracker */
+.pace-card{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px 22px}
+.pace-summary{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.pace-summary .big{font-size:34px;font-weight:800;color:#e8edf2;line-height:1}
+.pace-summary .delta{font-size:14px;font-weight:700;padding:4px 10px;border-radius:8px;font-family:'Space Mono',monospace}
+.pace-summary .ctx{font-size:12px;color:var(--tx3)}
+.pace-chart-wrap{position:relative;height:300px;margin-top:18px}
+
+/* Cumul YTD */
+.ytd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.ytd-card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:16px 18px}
+.ytd-card .head{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:8px}
+.ytd-card .v{font-size:22px;font-weight:800;color:#e8edf2;line-height:1.1;margin-bottom:4px}
+.ytd-card .sub{font-size:11px;color:var(--tx3);margin-top:6px}
+
+/* Tableau récap toutes années */
+.tbl-wrap{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+.tbl-wrap-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 14px;text-align:right;font-size:12px;border-bottom:1px solid var(--bd);font-family:'Space Mono',monospace}
+th:first-child,td:first-child{text-align:left;font-family:'Inter',sans-serif}
+th{background:var(--bg3);color:var(--tx2);font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:10px}
+td{color:#e8edf2}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(45,106,159,.05)}
+.cell-empty{color:var(--tx2);font-style:italic}
+
+/* Responsive mobile */
+@media (max-width:900px){
+  .content{padding:18px}
+  .period-bar{flex-direction:column;align-items:stretch;padding:14px}
+  .period-controls{flex-direction:column;align-items:stretch;gap:10px}
+  .year-pills{justify-content:center}
+  .week-control{justify-content:center}
+  .wk-slider{flex:1}
+  .pace-summary .big{font-size:26px}
+  .kpi-strip,.ytd-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:480px){
+  .kpi-strip,.ytd-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="s-logo"><div class="s-badge">CIA</div><div class="s-sub">Centre International d'Antibes</div></div>
+  <nav class="s-nav">
+    <div class="s-sec">Navigation</div>
+    <a class="s-item" href="index.html"><span>🏠</span> Accueil</a>
+    <a class="s-item" href="dashboard.html"><span>📊</span> Dashboard annuel</a>
+    <a class="s-item" href="comparaison.html"><span>⚖️</span> Comparaison</a>
+    <a class="s-item" href="fidelite.html"><span>💚</span> Fidélité</a>
+    <a class="s-item active" href="#"><span>🗓️</span> Suivi hebdomadaire</a>
+    <div class="s-sec">Années</div>
+    <div id="yearLinks"></div>
+    <script>
+      (function(){
+        var el = document.getElementById('yearLinks');
+        if (!el || typeof CIA_DATA === 'undefined') return;
+        var ys = Object.keys(CIA_DATA).sort(function(a,b){ return b - a; });
+        el.innerHTML = ys.map(function(y){
+          return '<a class="s-item" href="dashboard.html?annee=' + y + '">'
+               + '<span>📅</span> ' + y + '</a>';
+        }).join('');
+      })();
+    </script>
+  </nav>
+  <div class="s-foot"><span class="dot"></span>Accès réservé<br>v2.0 — Mai 2026</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title">Suivi hebdomadaire</div>
+      <div class="tb-meta">Performance semaine par semaine — comparaisons N-1, N-2, N-3</div>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-toggle" type="button" aria-label="Changer le thème">
+        <span class="tt-icon">☀️</span>
+        <span class="tt-label">Clair</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Sélecteur de période -->
+    <div class="period-bar">
+      <div class="period-info">
+        <div class="lbl">Période sélectionnée</div>
+        <div class="val" id="periodTitle">—</div>
+        <div class="dates" id="periodDates"></div>
+      </div>
+      <div class="period-controls">
+        <div class="year-pills" id="yearPills"></div>
+        <div class="week-control">
+          <button class="wk-btn" id="wkPrev" type="button" aria-label="Semaine précédente">−</button>
+          <input class="wk-input" id="wkInput" type="number" min="1" max="53" value="20">
+          <button class="wk-btn" id="wkNext" type="button" aria-label="Semaine suivante">+</button>
+          <input class="wk-slider" id="wkSlider" type="range" min="1" max="53" value="20">
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI de la semaine -->
+    <section class="section">
+      <div class="section-title">Indicateurs de la semaine</div>
+      <div class="kpi-strip" id="kpiStrip"></div>
+    </section>
+
+    <!-- Pace tracker -->
+    <section class="section">
+      <div class="section-title">Pace tracker — où en sommes-nous ?</div>
+      <div class="section-desc">Cumul depuis le 1er janvier comparé aux mêmes semaines des années précédentes. La ligne verticale indique la semaine sélectionnée.</div>
+      <div class="pace-card">
+        <div class="pace-summary" id="paceSummary"></div>
+        <div class="pace-chart-wrap"><canvas id="paceChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- Cumul YTD -->
+    <section class="section">
+      <div class="section-title">Cumul depuis le 1er janvier (jusqu'à la semaine sélectionnée)</div>
+      <div class="ytd-grid" id="ytdGrid"></div>
+    </section>
+
+    <!-- Tableau récap : la semaine N à travers les années -->
+    <section class="section">
+      <div class="section-title">La semaine sélectionnée à travers les années</div>
+      <div class="tbl-wrap">
+        <div class="tbl-wrap-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Année</th>
+                <th>CA TTC</th>
+                <th>Réservations</th>
+                <th>Stagiaires</th>
+                <th>Panier moyen</th>
+                <th>Juniors</th>
+                <th>Adultes</th>
+                <th>Groupes</th>
+              </tr>
+            </thead>
+            <tbody id="weekTbl"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+// =============================================================================
+// SUIVI HEBDOMADAIRE — logique de la page
+// (fmt et fmtK sont deja declares dans data.js)
+// =============================================================================
+
+const W = CIA_WEEKLY;
+const YEARS = W.years.slice().sort(function(a,b){return b-a});  // desc
+
+// Etat
+let currentYear = YEARS[0];
+let currentWeek = 20;
+let paceChart = null;
+
+function getKey(y, w){ return y + '-S' + String(w).padStart(2,'0'); }
+function getWeek(y, w){ return W.weeks[getKey(y,w)] || null; }
+
+// Bornes connues de l'annee courante (week min et max disponibles)
+function yearRange(y){
+  var keys = Object.keys(W.weeks).filter(function(k){ return W.weeks[k].y === y; });
+  if (!keys.length) return { min: 1, max: 52 };
+  var ws = keys.map(function(k){ return W.weeks[k].w; });
+  return { min: Math.min.apply(null, ws), max: Math.max.apply(null, ws) };
+}
+
+// Date du lundi d'une semaine ISO (annee, semaine)
+function isoWeekToDate(year, week){
+  // ISO 8601 : semaine 1 = celle qui contient le 4 janvier
+  var jan4 = new Date(Date.UTC(year, 0, 4));
+  var jan4Day = jan4.getUTCDay() || 7;
+  var mondayOfWeek1 = new Date(jan4);
+  mondayOfWeek1.setUTCDate(jan4.getUTCDate() - jan4Day + 1);
+  var monday = new Date(mondayOfWeek1);
+  monday.setUTCDate(mondayOfWeek1.getUTCDate() + (week - 1) * 7);
+  var sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+  return { monday: monday, sunday: sunday };
+}
+function fmtDateShort(d){
+  var m = ['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+  return d.getUTCDate() + ' ' + m[d.getUTCMonth()];
+}
+
+function evoBadge(curr, prev){
+  if (prev === null || prev === undefined || prev === 0) return '<span class="evo-dim">n/a</span>';
+  var pct = (curr - prev) / Math.abs(prev) * 100;
+  var cl = pct >= 5 ? 'evo-g' : pct <= -5 ? 'evo-r' : 'evo-n';
+  var arr = pct > 0 ? '↑' : pct < 0 ? '↓' : '→';
+  return '<span class="pct ' + cl + '">' + arr + ' ' + (pct > 0 ? '+' : '') + pct.toFixed(1) + '%</span>';
+}
+
+function renderYearPills(){
+  document.getElementById('yearPills').innerHTML = YEARS.map(function(y){
+    return '<button class="y-pill' + (y === currentYear ? ' active' : '') + '" data-y="' + y + '">' + y + '</button>';
+  }).join('');
+  document.querySelectorAll('.y-pill').forEach(function(b){
+    b.addEventListener('click', function(){
+      currentYear = parseInt(b.dataset.y, 10);
+      // S'assurer que la semaine est dans la plage de la nouvelle annee
+      var r = yearRange(currentYear);
+      if (currentWeek > r.max) currentWeek = r.max;
+      if (currentWeek < r.min) currentWeek = r.min;
+      renderAll();
+    });
+  });
+}
+
+function renderControls(){
+  var input = document.getElementById('wkInput');
+  var slider = document.getElementById('wkSlider');
+  var r = yearRange(currentYear);
+  input.min = r.min; input.max = r.max;
+  slider.min = r.min; slider.max = r.max;
+  input.value = currentWeek;
+  slider.value = currentWeek;
+  document.getElementById('wkPrev').disabled = currentWeek <= r.min;
+  document.getElementById('wkNext').disabled = currentWeek >= r.max;
+}
+
+function renderPeriodInfo(){
+  document.getElementById('periodTitle').textContent = 'Semaine ' + currentWeek + ' · ' + currentYear;
+  var d = isoWeekToDate(currentYear, currentWeek);
+  document.getElementById('periodDates').textContent =
+    'du ' + fmtDateShort(d.monday) + ' au ' + fmtDateShort(d.sunday) + ' ' + currentYear;
+}
+
+function renderKPIs(){
+  var curr = getWeek(currentYear, currentWeek);
+  var prev1 = getWeek(currentYear - 1, currentWeek);
+  var prev2 = getWeek(currentYear - 2, currentWeek);
+  var prev3 = getWeek(currentYear - 3, currentWeek);
+
+  function kpiCard(lbl, key, color, formatter){
+    var v   = curr  ? curr[key]  : 0;
+    var p1  = prev1 ? prev1[key] : null;
+    var p2  = prev2 ? prev2[key] : null;
+    var p3  = prev3 ? prev3[key] : null;
+    var rows = [
+      [currentYear - 1, p1],
+      [currentYear - 2, p2],
+      [currentYear - 3, p3]
+    ];
+    return '<div class="kpi" style="--kc:' + color + '">'
+      + '<div class="lbl">' + lbl + '</div>'
+      + '<div class="val">' + formatter(v) + '</div>'
+      + '<div class="evos">'
+      + rows.map(function(r){
+          return '<div class="evo-row"><span class="yr">' + r[0] + '</span>' + evoBadge(v, r[1])
+                 + '<span style="color:var(--tx3);font-size:10px">' + (r[1] !== null && r[1] !== undefined ? formatter(r[1]) : '—') + '</span></div>';
+        }).join('')
+      + '</div></div>';
+  }
+
+  var fmtCA = function(v){ return v >= 1000 ? (v/1000).toFixed(1) + ' K€' : v + ' €'; };
+  var fmtNB = function(v){ return fmt(v); };
+  var fmtPM = function(v){ return fmt(v) + ' €'; };
+
+  document.getElementById('kpiStrip').innerHTML =
+      kpiCard('CA TTC',         'ca', '#44937d', fmtCA)
+    + kpiCard('Réservations',   'nb', '#2d6a9f', fmtNB)
+    + kpiCard('Stagiaires uniques', 'st', '#a259c7', fmtNB)
+    + kpiCard('Panier moyen',   'pm', '#e8723a', fmtPM);
+}
+
+function cumulYTD(year, uptoWeek){
+  var sum = { ca: 0, nb: 0, st: 0 };
+  for (var w = 1; w <= uptoWeek; w++) {
+    var d = getWeek(year, w);
+    if (d) { sum.ca += d.ca; sum.nb += d.nb; sum.st += d.st; }
+  }
+  return sum;
+}
+
+function renderYTD(){
+  var cur  = cumulYTD(currentYear, currentWeek);
+  var prev = cumulYTD(currentYear - 1, currentWeek);
+
+  function ytdCard(lbl, key, formatter){
+    var delta = '';
+    if (prev[key] > 0) {
+      var pct = (cur[key] - prev[key]) / prev[key] * 100;
+      var cl = pct >= 5 ? 'evo-g' : pct <= -5 ? 'evo-r' : 'evo-n';
+      delta = '<span class="pct ' + cl + '">' + (pct > 0 ? '+' : '') + pct.toFixed(1) + '%</span>';
+    }
+    return '<div class="ytd-card">'
+      + '<div class="head">' + lbl + '</div>'
+      + '<div class="v">' + formatter(cur[key]) + '</div>'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' + delta
+      + '<span class="sub" style="margin:0">vs ' + (currentYear-1) + ' : ' + formatter(prev[key]) + '</span></div>'
+      + '</div>';
+  }
+
+  document.getElementById('ytdGrid').innerHTML =
+      ytdCard('CA TTC cumulé', 'ca', function(v){ return v >= 1e6 ? (v/1e6).toFixed(2)+' M€' : (v/1000).toFixed(0)+' K€'; })
+    + ytdCard('Réservations',  'nb', fmt)
+    + ytdCard('Stagiaires uniques', 'st', fmt);
+}
+
+function renderPaceSummary(cur, prev){
+  var html = '';
+  html += '<div class="big">' + (cur.ca >= 1e6 ? (cur.ca/1e6).toFixed(2)+' M€' : (cur.ca/1000).toFixed(0)+' K€') + '</div>';
+  if (prev.ca > 0) {
+    var pct = (cur.ca - prev.ca) / prev.ca * 100;
+    var cl = pct >= 5 ? 'evo-g' : pct <= -5 ? 'evo-r' : 'evo-n';
+    var sign = pct > 0 ? '+' : '';
+    html += '<div class="delta ' + cl + '">' + sign + pct.toFixed(1) + '%</div>';
+    html += '<div class="ctx">vs ' + (currentYear-1) + ' à la même date (' + (prev.ca >= 1e6 ? (prev.ca/1e6).toFixed(2)+' M€' : (prev.ca/1000).toFixed(0)+' K€') + ')</div>';
+  } else {
+    html += '<div class="ctx">Cumul depuis S01 jusqu\'à la semaine ' + currentWeek + '</div>';
+  }
+  document.getElementById('paceSummary').innerHTML = html;
+}
+
+function renderPaceChart(){
+  var cur  = cumulYTD(currentYear, currentWeek);
+  var prev = cumulYTD(currentYear - 1, currentWeek);
+  renderPaceSummary(cur, prev);
+
+  // Construire les cumul cumulatif par semaine, sur 1..52, pour chaque annee
+  var maxW = 52;
+  var datasets = [];
+  var colors = { 2023:'#5ea3d4', 2024:'#e8723a', 2025:'#44937d', 2026:'#a259c7', 2027:'#e8c93a', 2028:'#3aa8e8' };
+
+  YEARS.slice().sort(function(a,b){return a-b}).forEach(function(y){
+    var cumul = []; var s = 0;
+    for (var w = 1; w <= maxW; w++) {
+      var d = getWeek(y, w);
+      if (d) s += d.ca;
+      cumul.push(s);
+    }
+    // Ne pas tracer les zeros en fin de courbe pour l'annee en cours
+    if (y === currentYear) {
+      var r = yearRange(y);
+      for (var i = r.max; i < maxW; i++) cumul[i] = null;
+    }
+    var col = colors[y] || '#888';
+    datasets.push({
+      label: String(y),
+      data: cumul,
+      borderColor: col,
+      backgroundColor: col + '22',
+      borderWidth: y === currentYear ? 3 : 1.6,
+      tension: 0.25,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      spanGaps: false
+    });
+  });
+
+  var css = getComputedStyle(document.body);
+  var txCol = css.getPropertyValue('--tx2').trim() || '#6b8299';
+  var grid  = (document.body.dataset.theme === 'light') ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.06)';
+
+  if (paceChart) paceChart.destroy();
+  paceChart = new Chart(document.getElementById('paceChart'), {
+    type: 'line',
+    data: { labels: Array.from({length:maxW}, function(_,i){return 'S'+String(i+1).padStart(2,'0')}), datasets: datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: txCol, font: { size: 11 }, usePointStyle: true } },
+        tooltip: {
+          callbacks: { label: function(ctx){
+            var v = ctx.parsed.y;
+            return ctx.dataset.label + ' : ' + (v >= 1e6 ? (v/1e6).toFixed(2)+' M€' : (v/1000).toFixed(0)+' K€');
+          }}
+        },
+        annotation: {}
+      },
+      scales: {
+        x: { ticks: { color: txCol, maxRotation:0, autoSkip:true, maxTicksLimit:13 }, grid: { color: grid } },
+        y: { ticks: { color: txCol, callback: function(v){ return v >= 1e6 ? (v/1e6).toFixed(1)+' M€' : (v/1000).toFixed(0)+' K€'; } }, grid: { color: grid }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Ligne verticale pour la semaine selectionnee (overlay via plugin draw)
+  var canvas = document.getElementById('paceChart');
+  var ctx = canvas.getContext('2d');
+  paceChart.options.plugins.afterDraw = null;
+  // Plugin perso : tracer la ligne verticale a chaque render
+  Chart.register({
+    id: 'verticalWeekLine',
+    afterDatasetsDraw: function(chart){
+      if (chart !== paceChart) return;
+      var scales = chart.scales;
+      var x = scales.x.getPixelForValue(currentWeek - 1);
+      var y0 = scales.y.top, y1 = scales.y.bottom;
+      var c = chart.ctx;
+      c.save();
+      c.strokeStyle = 'rgba(255,200,80,0.7)';
+      c.lineWidth = 1.5;
+      c.setLineDash([4,4]);
+      c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y1); c.stroke();
+      c.fillStyle = 'rgba(255,200,80,0.9)';
+      c.font = '11px "Space Mono"';
+      c.fillText('S' + String(currentWeek).padStart(2,'0'), x + 4, y0 + 12);
+      c.restore();
+    }
+  });
+  paceChart.update();
+}
+
+function renderWeekTable(){
+  var rows = YEARS.slice().sort(function(a,b){return b-a}).map(function(y){
+    var d = getWeek(y, currentWeek);
+    if (!d) {
+      return '<tr><td><b>' + y + '</b></td><td colspan="7" class="cell-empty">aucune donnée</td></tr>';
+    }
+    var fmtK = function(v){ return v >= 1e3 ? (v/1e3).toFixed(1)+' K€' : v + ' €'; };
+    return '<tr>'
+      + '<td><b>' + y + '</b></td>'
+      + '<td>' + fmtK(d.ca) + '</td>'
+      + '<td>' + fmt(d.nb) + '</td>'
+      + '<td>' + fmt(d.st) + '</td>'
+      + '<td>' + fmt(d.pm) + ' €</td>'
+      + '<td>' + fmtK(d.sJ) + ' <span style="color:var(--tx2);font-size:10px">(' + d.nJ + ')</span></td>'
+      + '<td>' + fmtK(d.sA) + ' <span style="color:var(--tx2);font-size:10px">(' + d.nA + ')</span></td>'
+      + '<td>' + fmtK(d.sG) + ' <span style="color:var(--tx2);font-size:10px">(' + d.nG + ')</span></td>'
+      + '</tr>';
+  });
+  document.getElementById('weekTbl').innerHTML = rows.join('');
+}
+
+function renderAll(){
+  document.querySelectorAll('.y-pill').forEach(function(b){
+    b.classList.toggle('active', parseInt(b.dataset.y,10) === currentYear);
+  });
+  renderControls();
+  renderPeriodInfo();
+  renderKPIs();
+  renderYTD();
+  renderPaceChart();
+  renderWeekTable();
+}
+
+function bindControls(){
+  document.getElementById('wkInput').addEventListener('input', function(e){
+    var v = parseInt(e.target.value, 10);
+    if (!isNaN(v)) { currentWeek = Math.max(1, Math.min(53, v)); renderAll(); }
+  });
+  document.getElementById('wkSlider').addEventListener('input', function(e){
+    currentWeek = parseInt(e.target.value, 10);
+    renderAll();
+  });
+  document.getElementById('wkPrev').addEventListener('click', function(){
+    if (currentWeek > 1) { currentWeek--; renderAll(); }
+  });
+  document.getElementById('wkNext').addEventListener('click', function(){
+    if (currentWeek < 53) { currentWeek++; renderAll(); }
+  });
+}
+
+// Determiner la semaine par defaut : la derniere semaine de l'annee courante
+// avec au moins 5 bookings (pour eviter les fins d'annee vides)
+function defaultWeek(){
+  var r = yearRange(currentYear);
+  for (var w = r.max; w >= r.min; w--) {
+    var d = getWeek(currentYear, w);
+    if (d && d.nb >= 5) return w;
+  }
+  return r.max;
+}
+
+function init(){
+  renderYearPills();
+  currentWeek = defaultWeek();
+  bindControls();
+  renderAll();
+
+  // Re-render du chart si on bascule le theme
+  var tBtn = document.querySelector('.theme-toggle');
+  if (tBtn) tBtn.addEventListener('click', function(){ setTimeout(renderPaceChart, 60); });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
