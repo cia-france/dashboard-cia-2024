@@ -237,23 +237,22 @@ function doSearch(query){
   var q = normalize(query);
   var qLen = q.length;
   var results = [];
-  var max = qLen >= 2 ? 200 : 50;  // si pas de recherche, on limite a 50
+  var maxResults = qLen >= 2 ? 200 : 50;
 
-  for (var i = 0; i < CIA_STAGIAIRES.length && results.length < max; i++) {
+  // 1ere passe : tous les matchs (filtre + recherche), pas de troncature
+  for (var i = 0; i < CIA_STAGIAIRES.length; i++) {
     var st = CIA_STAGIAIRES[i];
     var nk = normalizedKeys[i];
 
-    // Filtre segment
     if (currentFilter === 'J' && st.s !== 'J') continue;
     if (currentFilter === 'A' && st.s !== 'A') continue;
     if (currentFilter === 'G' && st.s !== 'G') continue;
     if (currentFilter === 'fid' && st.y.length < 2) continue;
     if (currentFilter === '2026' && st.y.indexOf(2026) === -1) continue;
 
-    // Recherche texte
     if (qLen >= 1 && nk.indexOf(q) === -1) continue;
 
-    results.push({ s: st, nk: nk, prefix: qLen > 0 && nk.startsWith(q) });
+    results.push({ s: st, prefix: qLen > 0 && nk.startsWith(q) });
   }
 
   // Tri : preference au prefixe match, puis par CA descendant
@@ -262,7 +261,16 @@ function doSearch(query){
     return b.s.ca - a.s.ca;
   });
 
-  renderResults(results.map(function(r){ return r.s; }));
+  // Affichage du compteur si filtré
+  var statusEl = document.getElementById('searchStatus');
+  var total = CIA_STAGIAIRES.length;
+  if (qLen > 0 || currentFilter !== 'all') {
+    statusEl.innerHTML = '<b style="color:#e8edf2">' + fmtNum(results.length) + '</b>&nbsp;résultat' + (results.length > 1 ? 's' : '') + ' sur ' + fmtNum(total) + (results.length > maxResults ? '&nbsp;<span style="color:var(--tx2)">(' + maxResults + ' affichés)</span>' : '');
+  } else {
+    statusEl.innerHTML = '<b style="color:var(--tx3)">' + fmtNum(total) + '</b>&nbsp;stagiaires — top dépensiers affichés. Tapez un nom pour rechercher.';
+  }
+
+  renderResults(results.slice(0, maxResults).map(function(r){ return r.s; }));
 }
 
 function renderResults(list){
