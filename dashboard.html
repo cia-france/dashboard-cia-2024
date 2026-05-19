@@ -136,7 +136,12 @@ tr:hover td{background:rgba(45,106,159,.05)}
     <a class="s-item" href="#" onclick="switchTab(3);return false"><span>🎓</span> Programmes</a>
     <a class="s-item" href="#" onclick="switchTab(1);return false"><span>🏷️</span> Segments</a>
   </nav>
-  <div class="s-foot"><span class="dot"></span>Accès réservé<br>v2.0 — Mai 2026</div>
+  <div class="s-foot">
+    <a href="/api/logout" style="display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0 -10px 8px;color:var(--tx3);text-decoration:none;font-size:11px;font-family:'Inter',sans-serif;font-weight:500;border-radius:7px;transition:.15s" onmouseover="this.style.background='var(--bg3)';this.style.color='#e8edf2'" onmouseout="this.style.background='';this.style.color='var(--tx3)'">
+      <span>🔓</span> Déconnexion
+    </a>
+    <span class="dot"></span>Accès réservé<br>v2.0 — Mai 2026
+  </div>
 </aside>
 
 <main class="main">
