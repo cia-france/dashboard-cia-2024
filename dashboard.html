@@ -230,7 +230,7 @@ function buildKPI(){
         :(pct>0?'+':'')+fmt(k.raw-k.prevRaw);
       evoH=`<div class="kpi-evo ${cl}"><span class="badge">${arr} ${fmtPct(pct)}</span><span style="color:var(--tx2);font-size:10px;font-weight:400">vs ${prevY}</span></div><div class="kpi-sub">${diff} vs ${prevY}</div>`;
     }
-    return `<div class="kpi" style="--kc:${k.kc}"><div class="kpi-lbl">${k.lbl}</div><div class="kpi-val">${k.val}</div>${evoH}${k.sub?`<div class="kpi-sub" style="margin-top:4px">${k.sub}</div>`:''}`;
+    return `<div class="kpi" style="--kc:${k.kc}"><div class="kpi-lbl">${k.lbl}</div><div class="kpi-val">${k.val}</div>${evoH}${k.sub?`<div class="kpi-sub" style="margin-top:4px">${k.sub}</div>`:''}</div>`;
   }).join('');
 }
 

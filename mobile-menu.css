@@ -42,8 +42,10 @@ body.menu-open{overflow:hidden}
   /* Hamburger visible */
   .menu-toggle{display:inline-flex}
 
-  /* Sidebar coulissante */
+  /* Sidebar coulissante — !important pour override les media queries
+     existantes de dashboard.html / comparaison.html qui font display:none */
   .sidebar{
+    display:flex !important;
     transform:translateX(-100%);
     transition:transform .25s ease;
     width:280px !important;
@@ -53,6 +55,9 @@ body.menu-open{overflow:hidden}
     box-shadow:0 0 40px rgba(0,0,0,.6);
   }
   body.menu-open .menu-backdrop{display:block}
+
+  /* Year-selector du topbar dashboard.html : redondant avec la sidebar sur mobile */
+  .year-sel{display:none !important}
 
   /* Main prend toute la largeur */
   .main{margin-left:0 !important}
